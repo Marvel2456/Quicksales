@@ -23,7 +23,8 @@
 
           <div class="mb-3">
             <label for="category" class="form-label">Category</label>
-            <select id="id_category" name="category" class="form-select form-select-sm rounded-0" required {% block Value-category %} {% endblock Value-category %}>
+            {{form.category}}
+            {% comment %} <select id="id_category" name="category" class="form-select form-select-sm rounded-0" required {% block Value-category %} {% endblock Value-category %}>
             {% if not products.category %}
             <option value="" disabled selected>Select Category</option>
             {% else %}
@@ -36,7 +37,7 @@
                 <option value="{{ category.id }}">{{ category.category_name }}</option>
                 {% endif %}
             {% endfor %}
-            </select>
+            </select> {% endcomment %}
           </div>
 
           <div class="mb-3">

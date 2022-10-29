@@ -1,0 +1,49 @@
+<!-- Modal -->
+<div class="modal fade" {% block modal-id %} id="addStaffModal" {% endblock modal-id %} tabindex="-1" aria-labelledby="addStaffModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h6 class="modal-title" id="addStaffModalLabel">{% block modal-title %}<i class="fas fa-plus"></i>&nbsp;&nbsp; Add Staff{% endblock modal-title %}</h6>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <!--Forms begins-->
+        <form {% block Action %} action="{% url 'staff' %}" {% endblock Action %} method="POST" class="card p-3 border-dark mt-3" enctype="multipart/form-data">
+          {% csrf_token %}
+  
+          <div class="modal-body">
+  
+          <!--==Block Id==-->
+          {% block Value-id %}  {% endblock Value-id %}
+  
+            <div class="mb-3">
+              <label for="username" class="form-label">Username</label>
+              <input name="username" type="text" class="form-control" placeholder="Username" required {% block Value-username %} {% endblock Value-username %}>
+              <div class="m-3" style="color:red;">{{form.username.errors}}</div>
+            </div>
+  
+            <div class="mb-3">
+              <label for="password1" class="form-label">Password</label>
+              <input name="password1" type="password" class="form-control" placeholder="Enter Password" required {% block Value-password1 %} {% endblock Value-password1 %}>
+            </div>
+  
+            <div class="mb-3">
+              <label for="password2" class="form-label">Confirm Password</label>
+              <input name="password2" type="password" class="form-control" placeholder="Confirm Password" required {% block Value-password2 %} {% endblock Value-password2 %}>
+            </div>
+            <div class="mt-4 text-center" style="width:100%;">
+              <button type="submit" class="btn btn-secondary">
+                {% block Btn-action %}<i class="fas fa-plus"></i>&nbsp;&nbsp; Add Staff{% endblock Btn-action %}
+              </button>
+              
+              <button type="reset" class="btn btn-secondary" title="Reset">
+                <i class="fas fa-sync-alt"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+        </form>
+        <!--Form ends-->
+      </div>
+    </div>
+  </div>
+  

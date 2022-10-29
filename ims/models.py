@@ -1,8 +1,7 @@
 from datetime import date
-from email.policy import default
-from enum import unique
 from django.db import models
 from django.contrib.auth.models import User
+
 
 # Create your models here.
 
@@ -16,7 +15,7 @@ class Staff(models.Model):
     date_created = models.DateTimeField(auto_now_add=True)
     
     def __str__(self):
-        return self.name
+        return str(self.user)
 
 class Category(models.Model):
     category_name = models.CharField(max_length=200, unique=True)
@@ -94,7 +93,7 @@ class Sale(models.Model):
     final_total_price = models.FloatField(default=0, blank=True, null=True)
     discount =  models.FloatField(default=0, blank=True, null=True)
     date_added = models.DateTimeField(auto_now_add=True, blank=True, null=True)
-    date_updated = models.DateTimeField(auto_now=True, blank=True, null=True)
+    date_updated = models.DateTimeField(auto_now_add=True, blank=True, null=True)
     transaction_id = models.CharField(max_length=100, null=True)
     completed = models.BooleanField(default=False)
 
@@ -119,6 +118,7 @@ class Sale(models.Model):
         profit = sum([item.get_profit for item in salesitem])
         return profit
         # display daily profits on the dashboard and on the sales page
+        #time based welcome greeting with javascript
 
 class SalesItem(models.Model):
     inventory = models.ForeignKey(Inventory, on_delete=models.SET_NULL, blank=True, null=True)
@@ -136,6 +136,11 @@ class SalesItem(models.Model):
         return total
 
     @property
+    def get_cost_total(self):
+        total = self.inventory.cost_price * self.quantity
+        return total
+
+    @property
     def get_profit(self):
-        profit = self.inventory.sale_price - self.inventory.cost_price
+        profit = self.get_total - self.get_cost_total
         return profit

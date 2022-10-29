@@ -1,3 +1,4 @@
+from tkinter import Widget
 from django.forms import ModelForm, ValidationError
 from django import forms
 from django.contrib.auth.forms import UserCreationForm
@@ -10,7 +11,7 @@ class ProductForm(ModelForm):
        fields = ('product_name', 'category', 'brand', 'unit', 'batch_no')
        
        widgets = {
-           'category': forms.Select(attrs={'class':'form-select', 'placeholder':'Category', 'required':True, 'title':'Select Category'})
+           'category': forms.Select(attrs={'class':'form-select'})
        }
 
     def clean(self):
@@ -28,6 +29,14 @@ class EditProductForm(ModelForm):
     class Meta:
         model = Product
         fields = ('product_name', 'category', 'brand', 'unit', 'batch_no',)
+
+        widget = {
+            'product_name' : forms.TextInput(attrs={'class':'form-control', 'placeholder':'Product'}),
+            'category' : forms.Select(attrs={'class':'form-select form-control', 'placeholder':'Category'}),
+            'brand': forms.TextInput(attrs={'class':'form-control', 'placeholder':'Brand'}),
+            'unit': forms.TextInput(attrs={'class':'form-control', 'placeholder':'Unit'}),
+            'batch_no': forms.TextInput(attrs={'class':'form-control', 'placeholder':'Batch No'})
+        }
 
 class CategoryForm(ModelForm):
     class Meta:
@@ -56,6 +65,11 @@ class CreateInventoryForm(ModelForm):
         model = Inventory
         fields = ('product', 'quantity', 'cost_price', 'sale_price', 'reorder_level')
 
+
+        widgets = {
+                'product': forms.Select(attrs={'class':'form-control form-select'})
+            }
+
     def clean(self):
         super(CreateInventoryForm, self).clean()
 
@@ -73,7 +87,18 @@ class RestockForm(ModelForm):
         model = Inventory
         fields = ('quantity_restocked', 'sale_price', 'cost_price')
 
-class EditInventoryForm(ModelForm):
+class ReorderForm(ModelForm):
     class Meta:
         model = Inventory
-        fields = ('product', 'quantity', 'cost_price', 'sale_price', 'reorder_level')
+        fields = ('reorder_level',)
+
+
+class UserForm(UserCreationForm):
+    class Meta:
+        model = User
+        fields = ('username', 'password1', 'password2')
+
+class CreateStaffForm(ModelForm):
+    class Meta:
+        model = Staff
+        fields = ('name', 'address', 'phone_number', 'email')

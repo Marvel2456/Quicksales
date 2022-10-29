@@ -9,13 +9,8 @@ from .decorators import unauthenticated_user, allowed_users, admin_only
 from . forms import CreateStaffForm, ReorderForm, ProductForm, EditProductForm, CategoryForm, EditCategoryForm, CreateInventoryForm, RestockForm, UserForm
 from django.core.paginator import Paginator
 from django.http import JsonResponse, HttpResponse
-from django.db.models import Max
 import csv
-# from django_pandas.io import read_frame
-# import plotly
-# import plotly.express as px
 import json
-# from datetime import date, datetime
 
 # Create your views here
 

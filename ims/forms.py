@@ -1,4 +1,3 @@
-from tkinter import Widget
 from django.forms import ModelForm, ValidationError
 from django import forms
 from django.contrib.auth.forms import UserCreationForm

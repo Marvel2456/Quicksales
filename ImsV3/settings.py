@@ -26,6 +26,8 @@ SECRET_KEY = 'django-insecure-#hwy0&m5td1l*^7i3(lu$wdl*4)shrhz$%ycp=qdx8tg(#fpu%
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
+
+CSRF_TRUSTED_ORIGINS = ['https://*.quicksales.up.railway.app','https://*.127.0.0.1']
 ALLOWED_HOSTS = ["*"]
 
 

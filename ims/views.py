@@ -3,7 +3,7 @@ from django.http import HttpResponseRedirect
 from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout
 from datetime import datetime, date
-from .models import Category, Product, Sale, SalesItem, Inventory, Staff
+from .models import Category, Product, Sale, SalesItem, Inventory, Staff, LoggedIn
 from django.contrib.auth.decorators import login_required
 from .decorators import unauthenticated_user, allowed_users, admin_only
 from . forms import CreateStaffForm, ReorderForm, ProductForm, EditProductForm, CategoryForm, EditCategoryForm, CreateInventoryForm, RestockForm, UserForm
@@ -22,6 +22,10 @@ def loginUser(request):
         user = authenticate(request, username=username, password=password)
         if user is not None:
             login(request, user)
+            LoggedIn.objects.create(staff=user,
+            login_id = datetime.now().timestamp(),
+            timestamp = datetime.now()
+            ).save()
             return redirect('index')
         else:
             messages.info(request, 'Username or Password is not correct')
@@ -564,3 +568,11 @@ def delete_staff(request):
             staff.delete()
             messages.success(request, "Succesfully deleted")
             return redirect('staff')
+
+def record(request):
+    login_trail = LoggedIn.objects.all()
+
+    context = {
+        'login_trail':login_trail,
+    }
+    return render(request, 'ims/records.html', context)

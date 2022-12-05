@@ -33,4 +33,10 @@ urlpatterns = [
     path('export_sales', views.export_sales_csv, name= 'export_sales'),
     path('login/', views.loginUser, name='login'),
     path('logout/', views.logoutUser, name='logout'),
+    path('export_audit', views.export_audit_csv, name= 'export_audit'),
+    # path('profitData/<str:pk>/', views.profitData, name='profitData'),
+    path('price_audit/', views.inventoryAudit, name='price_audit'),
+    path('ticket/', views.errorTicket, name='ticket'),
+    path('create_ticket/', views.createTicket, name='create_ticket'),
+    path('tickets/<str:pk>', views.Ticket, name='tickets'),
 ]

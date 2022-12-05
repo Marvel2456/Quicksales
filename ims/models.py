@@ -1,6 +1,7 @@
 from datetime import date
 from django.db import models
 from django.contrib.auth.models import User
+from simple_history.models import HistoricalRecords
 
 
 # Create your models here.
@@ -69,6 +70,7 @@ class Inventory(models.Model):
     variance = models.IntegerField(default=0)
     last_updated = models.DateField(auto_now=True,)
     date_created = models.DateTimeField(auto_now_add=True,)
+    history = HistoricalRecords()
 
     class Meta:
         verbose_name_plural = "inventories"
@@ -102,6 +104,12 @@ class Sale(models.Model):
     date_added = models.DateTimeField(auto_now_add=True, blank=True, null=True)
     date_updated = models.DateTimeField(auto_now_add=True, blank=True, null=True)
     transaction_id = models.CharField(max_length=100, null=True)
+    choices = (
+        ('Cash', 'Cash'),
+        ('Transfer', 'Transfer'),
+        ('POS', 'POS'),
+    )
+    method = models.CharField(max_length=50, choices=choices,default="Cash", blank=True, null=True)
     completed = models.BooleanField(default=False)
 
     def __str__(self):
@@ -151,3 +159,26 @@ class SalesItem(models.Model):
     def get_profit(self):
         profit = self.get_total - self.get_cost_total
         return profit
+
+class Supplier(models.Model):
+    supplier_name = models.CharField(max_length=250, blank=True, null=True)
+    supplier_number = models.CharField(max_length=100, blank=True, null=True)
+    supplies = models.TextField(blank=True, null=True)
+
+    def __str__(self):
+        return self.supplier_name
+
+class ErrorTicket(models.Model):
+    staff = models.ForeignKey(Staff, on_delete=models.SET_NULL, blank=True, null=True)
+    title = models.CharField(max_length=150, blank=True, null=True)
+    description = models.TextField(blank=True, null=True)
+    choices = (
+        ('Pending', 'Pending'),
+        ('Seen', 'Seen'),
+    )
+    status = models.CharField(max_length=50, choices=choices,default="Pending", blank=True, null=True)
+    date_added = models.DateTimeField(auto_now_add=True, blank=True, null=True)
+    date_updated = models.DateTimeField(auto_now=True, blank=True, null=True)
+
+    def __str__(self):
+        return str(self.title)

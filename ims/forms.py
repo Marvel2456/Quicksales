@@ -101,3 +101,24 @@ class CreateStaffForm(ModelForm):
     class Meta:
         model = Staff
         fields = ('name', 'address', 'phone_number', 'email')
+
+class PaymentForm(ModelForm):
+    class Meta:
+        model = Sale
+        fields = ('method',)
+
+class CreateTicketForm(ModelForm):
+    class Meta:
+        model = ErrorTicket
+        fields = ('title', 'description')
+        exclude = ['staff']
+
+class UpdateTicketForm(ModelForm):
+    class Meta:
+        model = ErrorTicket
+        fields = ('status',)
+
+        widgets = {
+            'status': forms.Select(attrs={'class':'form-select', 'placeholder':'status', 'required':True})
+        }
+

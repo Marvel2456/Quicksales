@@ -33,6 +33,7 @@
         
     </header>
     <div class="app-wrapper">
+        {% include 'ims/messages.html' %}
         {% block content %}
     
 
@@ -56,7 +57,14 @@
 
     <!-- Charts JS -->
     <script src="{% static 'assets/plugins/chart.js/chart.min.js' %}"></script> 
-    <script src="{% static 'assets/js/index-charts.js' %}"></script> 
+    <script src="{% static 'assets/js/index-charts.js' %}"></script>
+    <script>
+        setTimeout(function(){
+            if ($('#msg').length > 0 ){
+                $('#msg').remove();
+            }
+        }, 3000)
+    </script> 
     <script>
         const ctx = document.getElementById('myChart').getContext('2d');
         const myChart = new Chart(ctx, {

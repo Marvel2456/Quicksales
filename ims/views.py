@@ -601,7 +601,7 @@ def delete_staff(request):
             return redirect('staff')
 
 def record(request):
-    login_trail = LoggedIn.objects.all()
+    login_trail = LoggedIn.objects.all().order_by('-timestamp')
 
     context = {
         'login_trail':login_trail,

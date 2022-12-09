@@ -70,7 +70,7 @@ def dashboard(request):
         date_added__day = current_day
     ).all()
     total_profits = sum(today_profit.values_list('total_profit', flat=True))
-    
+    pending = ErrorTicket.objects.filter(status='Pending')
     inventory = Inventory.objects.all()
 
     sale = Sale.objects.order_by('-total_profit')[:7]
@@ -80,6 +80,7 @@ def dashboard(request):
 
 
     context = {
+        'pending':pending,
         'products':products,
         'category':category,
         'total_product':total_product,
@@ -610,9 +611,11 @@ def record(request):
 
 def errorTicket(request):
     ticket = ErrorTicket.objects.all()
+    pending = ErrorTicket.objects.filter(status='Pending')
 
     context = {
-        'ticket':ticket
+        'ticket':ticket,
+        'pending':pending
     }
 
     return render(request, 'ims/ticket.html', context)

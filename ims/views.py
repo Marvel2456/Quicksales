@@ -639,7 +639,7 @@ def createTicket(request):
         form = CreateTicketForm(request.POST or None)
         if form.is_valid():
             ticket = form.save(commit=False)
-            ticket.staff = request.user
+            ticket.staff = request.user.staff
             ticket.save()
             messages.success(request, 'Ticket Created Successfully')
             return redirect('index')

@@ -14,7 +14,10 @@ class SaleHistoryAdmin(SimpleHistoryAdmin):
     history_list_display = ["date_added"]
     search_fields = ['staff__username', 'date_added']
 
-
+# class CountHistoryAdmin(SimpleHistoryAdmin):
+#     list_display = ["id", "inventory", "date_added"]
+#     history_list_display = ["date_added"]
+#     search_fields = ['staff__username', 'date_added']
 
 
 admin.site.register(Product)
@@ -24,4 +27,5 @@ admin.site.register(Category)
 admin.site.register(Inventory, InventoryHistoryAdmin)
 admin.site.register(Supplier)
 admin.site.register(ErrorTicket)
+# admin.site.register(Count, CountHistoryAdmin)
 # admin.site.register(Event)

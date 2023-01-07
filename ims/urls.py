@@ -45,4 +45,8 @@ urlpatterns = [
     path('reports/', views.report, name='reports'),
     path('<int:year>/<str:month>/', views.eventsManager, name='report'),
     path('delete_pos/', views.deletePos, name='delete_pos'),
+    path('count/', views.countView, name='count'),
+    path('addcount/', views.addCount, name='addcount'),
 ]
+# watch out if the value of the variance changes or it is stamped to each date
+# what happens when users logs in to another POS and makes sale note: should not be possible

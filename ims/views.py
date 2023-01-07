@@ -504,6 +504,31 @@ def restock(request):
                 messages.success(request, 'successfully updated')
                 return redirect('inventorys')
 
+@for_sub_admin
+def countView(request):
+    inventory = Inventory.objects.all()
+    audit = Inventory.history.all()
+
+    context = {
+        'inventory':inventory,
+        'audit':audit
+    }
+    return render(request, 'ims/count.html', context)
+
+
+@for_sub_admin
+def addCount(request):
+    if request.method == 'POST':
+        inventory = Inventory.objects.get(id = request.POST.get('id'))
+        if request.method != None:
+            form = AddCountForm(request.POST, instance=inventory)
+            if form.is_valid():
+                form.save(commit=False)
+                inventory.variance = inventory.count - inventory.store_quantity
+                inventory.save()
+                messages.success(request, 'Count Added Successfully')
+                return redirect('count')
+
 @for_admin
 def delete_inventory(request):
     if request.method == 'POST':

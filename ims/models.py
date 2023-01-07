@@ -49,6 +49,7 @@ class Inventory(models.Model):
     store = models.IntegerField(default=0)
     sold = models.IntegerField(default=0, blank=True, null=True)
     variance = models.IntegerField(default=0)
+    available = models.IntegerField(default=0, blank=True, null=True)
     last_updated = models.DateField(auto_now=True,)
     date_created = models.DateTimeField(auto_now_add=True,)
     history = HistoricalRecords()
@@ -71,6 +72,21 @@ class Inventory(models.Model):
         salesitem = self.salesitem_set.all()
         sold = sum([item.quantity for item in salesitem])
         return sold
+
+    # @property
+    # def quantity_variance(self):
+    #     count = self.count_set.all()
+    #     new_variance = self.store_quantity - sum([item.count_quantity for item in count])
+    #     return new_variance
+
+# class Count(models.Model):
+#     inventory = models.ForeignKey(Inventory, on_delete=models.CASCADE)
+#     count_quantity = models.IntegerField(default=0, blank=True, null=True)
+#     date_added = models.DateTimeField(auto_now_add=True)
+#     history = HistoricalRecords()
+
+#     def __str__(self):
+#         return str(self.inventory.product.product_name)
 
 class Sale(models.Model):
     staff = models.ForeignKey(CustomUser, on_delete=models.SET_NULL, blank=True, null=True)
@@ -112,6 +128,12 @@ class Sale(models.Model):
         return profit
         # display daily profits on the dashboard and on the sales page
         #time based welcome greeting with javascript
+
+    @property
+    def get_total_cost_price(self):
+        salesitem = self.salesitem_set.all()
+        cost_price = sum([item.get_cost_total for item in salesitem])
+        return cost_price
 
 
 class SalesItem(models.Model):

@@ -131,3 +131,9 @@ class EditPosForm(ModelForm):
         # widget=forms.CheckboxSelectMultiple
         # )
 
+class AddCountForm(ModelForm):
+    class Meta:
+        model = Inventory
+        fields = ('count',)
+
+

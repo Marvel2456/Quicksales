@@ -1,6 +1,6 @@
 {% extends 'base.html' %}
 {% load static %}
-{% block title %} Inventory {% endblock title %}
+{% block title %} Products {% endblock title %}
 
 {% block content %}
 
@@ -45,35 +45,23 @@
                                     <tr>
                                         <th class="cell">Product</th>
                                         <th class="cell">Category</th>
-                                        <th class="cell">Quantity</th>
-                                        <th class="cell">Last Updated</th>
-                                        <th class="cell"></th>
                                         <th class="cell"></th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     <div class="m-2 py-2">
-                                        <a class="btn app-btn-secondary " data-bs-toggle="modal" data-bs-target="#addInventoryModal">
-                                            <i class="fas fa-plus"></i>
-                                            Add Inventory
+                                        <a class="btn app-btn-secondary " href="{% url 'count' %}">
+                                            <i class="fas fa-eye"></i>
+                                            View Count History
                                         </a>
                                     </div>    
                                     {% for inventory in inventory_page %}
                                     <tr>
                                         <td class="cell"><span class="truncate">{{inventory.product.product_name}}</span></td>
                                         <td class="cell">{{inventory.product.category}}</td>
-                                        <td class="cell">{{inventory.store_quantity}}</span></td>
-                                        <td class="cell">{{inventory.last_updated}}</td>
+                                        
                                         <td class="cell">
-                                            {% if inventory.store_quantity > inventory.reorder_level %}
-                                            <span class="badge bg-success"><a class="btn-sm app-btn-success" style="cursor:pointer;" data-bs-toggle="modal" data-bs-target="#addRestockModal{{inventory.pk}}">restock</a></span>
-                                            {% elif inventory.store_quantity <= inventory.reorder_level %}
-                                            <span class="badge bg-danger"><a class="btn-sm app-btn-success" style="cursor:pointer;" data-bs-toggle="modal" data-bs-target="#addRestockModal{{inventory.pk}}">restock</a></span>
-                                            {% endif %}
-                                        </td>
-                                        <td class="cell">
-                                            <a class="btn-sm app-btn-secondary" data-bs-toggle="modal" style="cursor:pointer;" data-bs-target="#reorderModal{{inventory.pk}}"><i class="fa-solid fa-pen-to-square"></i></a>&nbsp;
-                                            <a class="btn-sm app-btn-secondary" data-bs-toggle="modal" style="cursor:pointer;" data-bs-target="#deleteInventoryModal{{inventory.pk}}"><i class="fa-solid fa-trash-can"></i></a>&nbsp;
+                                            <a class="btn-sm app-btn-secondary" data-bs-toggle="modal" style="cursor:pointer;" data-bs-target="#addCountModal{{inventory.pk}}"><i class="fa-solid fa-calculator"></i></a>
                                         </td>
                                     </tr>
                                     {% include 'ims/delete_inventory.html' %}

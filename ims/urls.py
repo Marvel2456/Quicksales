@@ -47,6 +47,7 @@ urlpatterns = [
     path('delete_pos/', views.deletePos, name='delete_pos'),
     path('count/', views.countView, name='count'),
     path('addcount/', views.addCount, name='addcount'),
+    path('productlist/', views.inventoryView, name='productlist'),
 ]
 # watch out if the value of the variance changes or it is stamped to each date
 # what happens when users logs in to another POS and makes sale note: should not be possible

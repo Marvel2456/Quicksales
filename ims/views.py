@@ -505,6 +505,27 @@ def restock(request):
                 return redirect('inventorys')
 
 @for_sub_admin
+def inventoryView(request):
+    inventory = Inventory.objects.all()
+    product = Product.objects.filter().all()
+    paginator = Paginator(Inventory.objects.all(), 3)
+    page = request.GET.get('page')
+    inventory_page = paginator.get_page(page)
+    nums = "a" *inventory_page.paginator.num_pages
+    product_contains_query = request.GET.get('product')
+
+    if product_contains_query != '' and product_contains_query is not None:
+        inventory_page = inventory.filter(product__product_name__icontains=product_contains_query)
+
+    context = {
+        'inventory':inventory,
+        'product':product,
+        'inventory_page':inventory_page,
+        'nums':nums,
+    }
+    return render(request, 'ims/product_list.html', context)
+
+@for_sub_admin
 def countView(request):
     inventory = Inventory.objects.all()
     audit = Inventory.history.all()

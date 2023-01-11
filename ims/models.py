@@ -5,8 +5,6 @@ from simple_history.models import HistoricalRecords
 
 
 # Create your models here.
-
-
 class Category(models.Model):
     category_name = models.CharField(max_length=200, unique=True)
     last_updated = models.DateField(auto_now=True,)
@@ -94,7 +92,7 @@ class Sale(models.Model):
     final_total_price = models.FloatField(default=0, blank=True, null=True)
     discount =  models.FloatField(default=0, blank=True, null=True)
     date_added = models.DateTimeField(auto_now_add=True, blank=True, null=True)
-    date_updated = models.DateTimeField(auto_now=True, blank=True, null=True)
+    date_updated = models.DateTimeField(auto_now_add=True, blank=True, null=True)
     transaction_id = models.CharField(max_length=100, null=True)
     choices = (
         ('Cash', 'Cash'),
@@ -163,7 +161,6 @@ class SalesItem(models.Model):
         profit = self.get_total - self.get_cost_total
         return profit
 
-
 class Supplier(models.Model):
     supplier_name = models.CharField(max_length=250, blank=True, null=True)
     supplier_number = models.CharField(max_length=100, blank=True, null=True)
@@ -187,4 +184,3 @@ class ErrorTicket(models.Model):
 
     def __str__(self):
         return str(self.title)
-

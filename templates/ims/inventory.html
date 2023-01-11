@@ -3,7 +3,6 @@
 {% block title %} Inventory {% endblock title %}
 
 {% block content %}
-
 <div class="app-content pt-3 p-md-3 p-lg-4">
     <div class="container-xl">
         
@@ -31,7 +30,7 @@
             </div><!--col-auto-->
         </div><!--row-->
        
-        <nav id="orders-table-tab" class="orders-table-tab app-nav-tabs nav shadow-sm flex-column flex-sm-row mb-4">
+        <nav id="orders-table-tab" class="orders-table-tab app-nav-tabs nav shadow-sm flex-column flex-sm-row mb-0">
             <a class="flex-sm-fill text-sm-center nav-link active" id="orders-all-tab" data-bs-toggle="tab" href="#orders-all" role="tab" aria-controls="orders-all" aria-selected="true">Inventory</a>
         </nav>
         
@@ -77,7 +76,7 @@
                                         </td>
                                     </tr>
                                     {% include 'ims/delete_inventory.html' %}
-                                    {% include 'ims/edit_inventory.html' %}
+                                    {% include 'ims/set_reorder.html' %}
                                     {% include 'ims/restock.html' %}
                                     {% include 'ims/add_count.html' %}
                                     {% endfor %}

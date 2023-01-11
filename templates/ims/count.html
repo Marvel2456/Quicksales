@@ -45,7 +45,6 @@
                                     <tr>
                                         <th class="cell">id</th>
                                         <th class="cell">Product</th>
-                                        <th class="cell">Quantity</th>
                                         <th class="cell">Count</th>
                                         <th class="cell">Variance</th>
                                         <th class="cell">Date</th>
@@ -53,23 +52,15 @@
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    <div class="m-2 py-2">
-                                        <a class="btn app-btn-secondary " data-bs-toggle="modal" data-bs-target="#addCountModal">
-                                            <i class="fas fa-plus"></i>
-                                            Add Count
-                                        </a>
-                                    </div>
                                     {% for audit in audit %}
                                     <tr>
                                         <td class="cell">{{forloop.counter}}</td>
                                         <td class="cell"><span class="truncate">{{audit.product.product_name}}</span></td>
-                                        <td class="cell">{{audit.store_quantity}}</td>
                                         <td class="cell">{{audit.count}}</td>
                                         <td class="cell">{{audit.variance}}</td>
                                         <td class="cell">{{audit.last_updated}}</td>
                                         
                                     </tr>
-                                    
                                     {% endfor %}
                                     
                                 </tbody>

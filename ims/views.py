@@ -31,6 +31,8 @@ def eventsManager(request, year, month):
     }
     return render(request, 'ims/reports.html', context)
 
+
+
 @login_required(login_url=('login'))
 def dashboard(request):
     now = datetime.now()
@@ -127,6 +129,7 @@ def store(request):
     }
     return render(request, 'ims/store.html', context)
 
+
 def cart(request):
     inventory = Inventory.objects.all()
     pos = Pos.objects.all()
@@ -143,6 +146,8 @@ def cart(request):
         'inventory':inventory
     }
     return render(request, 'ims/cart.html', context)
+
+
 
 def checkout(request):
     inventory = Inventory.objects.all()
@@ -166,6 +171,8 @@ def checkout(request):
         # 'pos':pos
     }
     return render(request, 'ims/checkout.html', context)
+
+
 
 def updateCart(request):
     data = json.loads(request.body)
@@ -260,6 +267,7 @@ def sales(request):
     }
     return render(request, 'ims/sales.html', context)
 
+@for_admin
 def sale(request, pk):
     sale = Sale.objects.get(id=pk)
 
@@ -291,6 +299,8 @@ def export_sales_csv(request):
     
     return response
     
+
+
 
 def reciept(request, pk):
     sale = Sale.objects.get(id = pk)
@@ -469,7 +479,6 @@ def inventory_list(request):
     return render(request, 'ims/inventory.html', context)
 
 
-
 def inventory(request, pk):
     inventory = Inventory.objects.get(id=pk)
 
@@ -484,7 +493,7 @@ def edit_inventory(request):
     if request.method == 'POST':
         inventory = Inventory.objects.get(id = request.POST.get('id'))
         if inventory != None:
-            form = EditInventoryForm(request.POST, instance=inventory)
+            form = ReorderForm(request.POST, instance=inventory)
             if form.is_valid():
                 form.save()
                 messages.success(request, 'successfully updated')
@@ -651,7 +660,6 @@ def record(request):
         'login_trail':login_trail,
     }
     return render(request, 'ims/records.html', context)
-
 
 def errorTicket(request):
     ticket = ErrorTicket.objects.all()

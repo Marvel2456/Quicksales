@@ -12,28 +12,13 @@ from django.http import JsonResponse, HttpResponse
 from django.db.models import Max
 import csv
 import json
-from account.decorators import for_admin, for_staff, for_sub_admin
-import calendar
-from calendar import HTMLCalendar
+from account.decorators import for_admin, for_staff, for_sub_admin, is_unsubscribed
+
 
 
 # Create your views here
-def eventsManager(request, year, month):
-    month = month.capitalize()
-
-    month_number = list(calendar.month_name).index(month)
-    month_number = int(month_number)
-    cal = HTMLCalendar().formatmonth(year, month_number)
-    context = {
-        'year':year,
-        'month':month,
-        'cal':cal
-    }
-    return render(request, 'ims/reports.html', context)
-
-
-
 @login_required(login_url=('login'))
+@is_unsubscribed
 def dashboard(request):
     now = datetime.now()
     current_year = now.strftime("%Y")
@@ -85,6 +70,7 @@ def dashboard(request):
     return render(request, 'ims/index.html', context)
 
 @login_required
+@is_unsubscribed
 @for_admin
 def report(request):
     now = datetime.now()
@@ -109,6 +95,7 @@ def report(request):
     return render(request, 'ims/reports.html', context)
 
 @login_required
+@is_unsubscribed
 @for_staff
 def store(request):
     inventory = Inventory.objects.all()
@@ -130,6 +117,9 @@ def store(request):
     return render(request, 'ims/store.html', context)
 
 
+@for_staff
+@login_required
+@is_unsubscribed
 def cart(request):
     inventory = Inventory.objects.all()
     pos = Pos.objects.all()
@@ -148,7 +138,9 @@ def cart(request):
     return render(request, 'ims/cart.html', context)
 
 
-
+@for_staff
+@login_required
+@is_unsubscribed
 def checkout(request):
     inventory = Inventory.objects.all()
     
@@ -199,6 +191,7 @@ def updateCart(request):
 
     return JsonResponse(context, safe=False)
 
+
 def updateQuantity(request):
     data = json.loads(request.body)
     input_value = int(data['val'])
@@ -222,6 +215,7 @@ def updateQuantity(request):
 
     return JsonResponse(context, safe=False)
 
+
 def sale_complete(request):
     transaction_id = datetime.now().timestamp()
     data = json.loads(request.body)
@@ -244,6 +238,7 @@ def sale_complete(request):
     return JsonResponse('Payment completed', safe=False)
 
 @login_required
+@is_unsubscribed
 @for_admin    
 def sales(request):
     sale = Sale.objects.all().order_by('-date_updated')
@@ -300,8 +295,9 @@ def export_sales_csv(request):
     return response
     
 
-
-
+@for_admin
+@login_required
+@is_unsubscribed
 def reciept(request, pk):
     sale = Sale.objects.get(id = pk)
     salesitem = SalesItem.objects.filter(sale_id=sale).all()
@@ -327,6 +323,8 @@ def profitData(request, pk):
 
 
 @for_sub_admin
+@login_required
+@is_unsubscribed
 def product_category(request):
     products = Product.objects.all().order_by('-date_created')
     category = Category.objects.filter().all()
@@ -389,6 +387,7 @@ def delete_product(request):
 
 
 @login_required
+@is_unsubscribed
 @for_sub_admin
 def category_list(request):
     category = Category.objects.all()
@@ -418,6 +417,8 @@ def category_list(request):
 
 
 @for_sub_admin
+@login_required
+@is_unsubscribed
 def category(request, pk):
     category = Category.objects.get(id=pk)
 
@@ -450,6 +451,8 @@ def delete_category(request):
 
 
 @for_sub_admin
+@login_required
+@is_unsubscribed
 def inventory_list(request):
     inventory = Inventory.objects.all()
     product = Product.objects.filter().all()
@@ -479,6 +482,8 @@ def inventory_list(request):
     return render(request, 'ims/inventory.html', context)
 
 
+@login_required
+@is_unsubscribed
 def inventory(request, pk):
     inventory = Inventory.objects.get(id=pk)
 
@@ -514,6 +519,8 @@ def restock(request):
                 return redirect('inventorys')
 
 @for_sub_admin
+@login_required
+@is_unsubscribed
 def inventoryView(request):
     inventory = Inventory.objects.all()
     product = Product.objects.filter().all()
@@ -535,6 +542,8 @@ def inventoryView(request):
     return render(request, 'ims/product_list.html', context)
 
 @for_sub_admin
+@login_required
+@is_unsubscribed
 def countView(request):
     inventory = Inventory.objects.all()
     audit = Inventory.history.all()
@@ -569,6 +578,8 @@ def delete_inventory(request):
             return redirect('inventorys')
 
 @for_admin
+@login_required
+@is_unsubscribed
 def inventoryAudit(request):
     inventory = Inventory.objects.all()
     audit = Inventory.history.all()
@@ -596,6 +607,7 @@ def export_audit_csv(request):
 
 
 @login_required
+@is_unsubscribed
 @for_admin
 def staffs(request): 
     staff = CustomUser.objects.all()
@@ -619,6 +631,7 @@ def staffs(request):
 
 
 @login_required
+@is_unsubscribed
 @for_admin
 def staff(request, pk):
     staff = CustomUser.objects.get(id=pk)
@@ -630,6 +643,7 @@ def staff(request, pk):
 
 
 @login_required
+@is_unsubscribed
 @for_admin
 def edit_staff(request):
     if request.method == 'POST':
@@ -653,6 +667,8 @@ def delete_staff(request):
 
 
 @for_admin
+@login_required
+@is_unsubscribed
 def record(request):
     login_trail = LoggedIn.objects.all().order_by('-timestamp')
 
@@ -661,6 +677,8 @@ def record(request):
     }
     return render(request, 'ims/records.html', context)
 
+@login_required
+@is_unsubscribed
 def errorTicket(request):
     ticket = ErrorTicket.objects.all()
     pending = ErrorTicket.objects.filter(status='Pending')
@@ -672,6 +690,8 @@ def errorTicket(request):
 
     return render(request, 'ims/ticket.html', context)
 
+@login_required
+@is_unsubscribed
 def Ticket(request, pk):
     ticket = ErrorTicket.objects.get(id=pk)
     form = UpdateTicketForm(instance=ticket)
@@ -687,6 +707,8 @@ def Ticket(request, pk):
     }
     return render(request, 'ims/view_ticket.html', context)
 
+@login_required
+@is_unsubscribed
 def createTicket(request):
     staff = CustomUser.objects.all()
     form = CreateTicketForm()
@@ -705,6 +727,8 @@ def createTicket(request):
     
     return render(request, 'ims/create_ticket.html', context)
 
+@login_required
+@is_unsubscribed
 def posView(request):
     pos = Pos.objects.all()
 
@@ -713,6 +737,8 @@ def posView(request):
     }
     return render(request, 'ims/pos.html', context)
 
+@login_required
+@is_unsubscribed
 def addPos(request):
     form = PosForm()
     if request.method == 'POST':
@@ -727,6 +753,8 @@ def addPos(request):
     }
     return render(request, 'ims/addpos.html', context)
 
+@login_required
+@is_unsubscribed
 def viewPos(request, pk):
     pos = Pos.objects.get(id = pk)
     sale = Sale.objects.filter(staff_id = pk)
@@ -737,6 +765,9 @@ def viewPos(request, pk):
     }
     return render(request, 'ims/viewpos.html', context)
 
+
+@login_required
+@is_unsubscribed
 def editPos(request, pk):
     pos = Pos.objects.get(id = pk)
     form = EditPosForm(instance=pos)
@@ -752,6 +783,7 @@ def editPos(request, pk):
         'pos':pos,
     }
     return render(request, 'ims/editpos.html', context)
+
 
 def deletePos(request):
     if request.method == 'POST':

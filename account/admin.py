@@ -19,7 +19,8 @@ class CustomStaffAdmin(UserAdmin):
                     'is_sub_admin',
                     'is_work_staff',
                     'phone_number',
-                    'address'
+                    'address',
+                    'is_subscribed'
                 ),
             }
 

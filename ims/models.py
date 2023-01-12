@@ -71,21 +71,6 @@ class Inventory(models.Model):
         sold = sum([item.quantity for item in salesitem])
         return sold
 
-    # @property
-    # def quantity_variance(self):
-    #     count = self.count_set.all()
-    #     new_variance = self.store_quantity - sum([item.count_quantity for item in count])
-    #     return new_variance
-
-# class Count(models.Model):
-#     inventory = models.ForeignKey(Inventory, on_delete=models.CASCADE)
-#     count_quantity = models.IntegerField(default=0, blank=True, null=True)
-#     date_added = models.DateTimeField(auto_now_add=True)
-#     history = HistoricalRecords()
-
-#     def __str__(self):
-#         return str(self.inventory.product.product_name)
-
 class Sale(models.Model):
     staff = models.ForeignKey(CustomUser, on_delete=models.SET_NULL, blank=True, null=True)
     total_profit = models.FloatField(default=0, blank=True, null=True)

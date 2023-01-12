@@ -8,6 +8,7 @@ class CustomUser(AbstractUser):
     is_work_staff = models.BooleanField(default = False)
     phone_number = models.CharField(max_length = 100)
     address = models.CharField(max_length = 200)
+    is_subscribed = models.BooleanField(default=True)
     date_created = models.DateTimeField(auto_now_add=True)
 
 class LoggedIn(models.Model):

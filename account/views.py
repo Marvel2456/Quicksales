@@ -12,7 +12,11 @@ def loginUser(request):
         password = request.POST.get('password')
         user = authenticate(request, username=username, password=password)
         
-        if user is not None:
+
+        if user.is_subscribed==False:
+            messages.info(request, f'Subscription has expired kindly renew to continue')
+            return redirect('login')
+        elif user is not None:
             login(request, user)
             LoggedIn.objects.create(staff=user,
             login_id = datetime.now().timestamp(),
@@ -26,7 +30,6 @@ def loginUser(request):
     return render(request, 'account/login.html')
 
 def logoutUser(request):
-    # user = CustomUser.objects.all()
     logout(request)
     # LoggedOut(staff = user,
     # logout_id = datetime.now().timestamp(),

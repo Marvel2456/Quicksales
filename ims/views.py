@@ -9,10 +9,18 @@ from django.contrib.auth.decorators import login_required
 from . forms import *
 from django.core.paginator import Paginator
 from django.http import JsonResponse, HttpResponse
-from django.db.models import Max
 import csv
 import json
 from account.decorators import for_admin, for_staff, for_sub_admin, is_unsubscribed
+from django.http import FileResponse
+import io
+from reportlab.pdfgen import canvas
+from reportlab.lib.units import inch
+from reportlab.lib.pagesizes import letter
+# from django.template.loader import render_to_string
+# from weasyprint import HTML
+# import tempfile
+# from django.db.models import Sum
 
 
 
@@ -99,7 +107,7 @@ def report(request):
 @for_staff
 def store(request):
     inventory = Inventory.objects.all()
-    paginator = Paginator(Inventory.objects.all(), 3)
+    paginator = Paginator(Inventory.objects.all(), 15)
     page = request.GET.get('page')
     inventory_page = paginator.get_page(page)
     nums = "a" *inventory_page.paginator.num_pages
@@ -328,7 +336,7 @@ def profitData(request, pk):
 def product_category(request):
     products = Product.objects.all().order_by('-date_created')
     category = Category.objects.filter().all()
-    paginator = Paginator(Product.objects.all(), 3)
+    paginator = Paginator(Product.objects.all(), 15)
     page = request.GET.get('page')
     products_page = paginator.get_page(page)
     nums = "a" *products_page.paginator.num_pages
@@ -391,7 +399,7 @@ def delete_product(request):
 @for_sub_admin
 def category_list(request):
     category = Category.objects.all()
-    paginator = Paginator(Category.objects.all(), 3)
+    paginator = Paginator(Category.objects.all(), 15)
     page = request.GET.get('page')
     category_page = paginator.get_page(page)
     nums = "a" *category_page.paginator.num_pages
@@ -456,7 +464,7 @@ def delete_category(request):
 def inventory_list(request):
     inventory = Inventory.objects.all()
     product = Product.objects.filter().all()
-    paginator = Paginator(Inventory.objects.all(), 3)
+    paginator = Paginator(Inventory.objects.all(), 15)
     page = request.GET.get('page')
     inventory_page = paginator.get_page(page)
     nums = "a" *inventory_page.paginator.num_pages
@@ -524,7 +532,7 @@ def restock(request):
 def inventoryView(request):
     inventory = Inventory.objects.all()
     product = Product.objects.filter().all()
-    paginator = Paginator(Inventory.objects.all(), 3)
+    paginator = Paginator(Inventory.objects.all(), 15)
     page = request.GET.get('page')
     inventory_page = paginator.get_page(page)
     nums = "a" *inventory_page.paginator.num_pages
@@ -758,10 +766,23 @@ def addPos(request):
 def viewPos(request, pk):
     pos = Pos.objects.get(id = pk)
     sale = Sale.objects.filter(staff_id = pk)
+    # staff = CustomUser.objects.all()
+    # staff_contains = request.GET.get('username')
 
+    start_date_contains = request.GET.get('start_date')
+    end_date_contains = request.GET.get('end_date')
+
+    if start_date_contains != '' and start_date_contains is not None:
+        sale = sale.filter(date_updated__gte=start_date_contains)
+
+    if end_date_contains != '' and end_date_contains is not None:
+        sale = sale.filter(date_updated__lt=end_date_contains)
+
+    total_profits = sum(sale.values_list('total_profit', flat=True))
     context = {
         'pos':pos,
-        'sale':sale
+        'sale':sale,
+        'total_profits':total_profits,
     }
     return render(request, 'ims/viewpos.html', context)
 
@@ -792,3 +813,43 @@ def deletePos(request):
             pos.delete()
             messages.success(request, "Succesfully deleted")
             return redirect('pos')
+
+def export_profit(request):
+    sale = Sale.objects.all()
+    # create buffer
+    buf = io.BytesIO()
+    #  create canvas
+    c = canvas.Canvas(buf, pagesize=letter, bottomup=0)
+    #  create a text object
+    textobj = c.beginText()
+    textobj.setTextOrigin(inch, inch)
+    textobj.setFont("Helvetica", 14)
+    # Add lines of text
+    total_profits = sum(sale.values_list('total_profit', flat=True))
+
+    lines = []
+
+    for sale in sale:
+        lines.append(sale.staff)
+        # lines.append(sale.transaction_id)
+        lines.append(sale.method)
+        # lines.append(sale.date_updated)
+        lines.append(sale.get_cart_items)
+        lines.append(sale.final_total_price)
+        lines.append(" ")
+
+    lines.append(total_profits)
+
+
+    for lines in lines:
+        textobj.textLine(lines)
+
+    c.drawText(textobj)
+    c.showPage()
+    c.save()
+    buf.seek(0)
+
+    #  return
+    return FileResponse(buf, as_attachment=True, filename='profits.pdf')
+
+    

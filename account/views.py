@@ -13,10 +13,11 @@ def loginUser(request):
         user = authenticate(request, username=username, password=password)
         
 
-        if user.is_subscribed==False:
+        
+        if user is not None and user.is_subscribed==False:
             messages.info(request, f'Subscription has expired kindly renew to continue')
             return redirect('login')
-        elif user is not None:
+        elif user is not None and user.is_subscribed==True:
             login(request, user)
             LoggedIn.objects.create(staff=user,
             login_id = datetime.now().timestamp(),
@@ -24,6 +25,7 @@ def loginUser(request):
             ).save()
             messages.success(request, f'Welcome {user.username}')
             return redirect('index')
+        
         else:
             messages.info(request, 'Username or Password is not correct')
 

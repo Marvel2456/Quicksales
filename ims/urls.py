@@ -47,5 +47,6 @@ urlpatterns = [
     path('count/', views.countView, name='count'),
     path('addcount/', views.addCount, name='addcount'),
     path('productlist/', views.inventoryView, name='productlist'),
+    path('export_profit_pdf', views.export_profit, name= 'export_profit_pdf'),
 ]
 # what happens when users logs in to another POS and makes sale note: should not be possible

@@ -1,15 +1,20 @@
 from django.forms import ModelForm, ValidationError
 from django import forms
 from django.contrib.auth.forms import UserCreationForm
-from account.models import CustomUser, Pos
+from account.models import CustomUser
 from . models import *
 
 class UserCreateForm(UserCreationForm):
     class Meta:
         model = CustomUser
         fields = (
-            'username', 'password1', 'password2', 'is_admin', 'is_sub_admin', 'is_work_staff'
+            'username', 'password1', 'password2', 'is_admin', 'is_sub_admin', 'is_work_staff', 'pos'
             )
+        
+        widgets = {
+            'pos': forms.Select(attrs={'class':'form-control', 'placeholder':'Pos'})
+        }
+
 
 class UserForm(ModelForm):
     class Meta:
@@ -122,27 +127,6 @@ class PaymentForm(ModelForm):
     class Meta:
         model = Sale
         fields = ('method',)
-
-
-class PosForm(ModelForm):
-    class Meta:
-        model = Pos
-        fields = ('name', 'description', 'staff',)
-
-        staff = forms.ModelMultipleChoiceField(
-        queryset=CustomUser.objects.all(),
-        widget=forms.CheckboxSelectMultiple
-        )
-
-class EditPosForm(ModelForm):
-    class Meta:
-        model = Pos
-        fields = ('name', 'description', 'staff')
-
-        # staff = forms.ModelMultipleChoiceField(
-        # queryset=CustomUser.objects.all(),
-        # widget=forms.CheckboxSelectMultiple
-        # )
 
 class AddCountForm(ModelForm):
     class Meta:

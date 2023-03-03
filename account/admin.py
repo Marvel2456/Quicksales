@@ -15,6 +15,7 @@ class CustomStaffAdmin(UserAdmin):
             'Additional Info',
             {
                 'fields': (
+                    'pos',
                     'is_admin',
                     'is_sub_admin',
                     'is_work_staff',
@@ -30,4 +31,3 @@ class CustomStaffAdmin(UserAdmin):
 admin.site.register(CustomUser, CustomStaffAdmin)
 admin.site.register(LoggedIn)
 admin.site.register(Pos)
-# admin.site.register(LoggedOut)

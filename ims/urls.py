@@ -38,15 +38,12 @@ urlpatterns = [
     path('ticket/', views.errorTicket, name='ticket'),
     path('create_ticket/', views.createTicket, name='create_ticket'),
     path('tickets/<str:pk>', views.Ticket, name='tickets'),
-    path('pos/', views.posView, name='pos'),
-    path('addpos/', views.addPos, name='addpos'),
-    path('viewpos/<str:pk>/', views.viewPos, name='viewpos'),
-    path('editpos/<str:pk>/', views.editPos, name='editpos'),
     path('reports/', views.report, name='reports'),
-    path('delete_pos/', views.deletePos, name='delete_pos'),
     path('count/', views.countView, name='count'),
     path('addcount/', views.addCount, name='addcount'),
     path('productlist/', views.inventoryView, name='productlist'),
     path('export_profit_pdf', views.export_profit, name= 'export_profit_pdf'),
 ]
 # what happens when users logs in to another POS and makes sale note: should not be possible
+# A business that price varies?
+#  work on field for staff to enter price sold

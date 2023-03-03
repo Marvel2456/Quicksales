@@ -1,10 +1,16 @@
-# from django import forms
-# from django import forms
-# from django.contrib.auth.forms import UserCreationForm
-# from .models import User
+from django.forms import ModelForm
+from django import forms
+from .models import Pos
 
 
-# class StaffCreateForm(UserCreationForm):
-#     class Meta:
-#         model = User
-#         fields = ('username', 'password1', 'password2', 'full_name', 'phone_number', 'address', 'is_admin', 'is_sub_admin', 'is_staff',)
+
+class CreatePosForm(ModelForm):
+    class Meta:
+        model = Pos
+        fields = ('pos_name',)
+
+
+class EditPosForm(ModelForm):
+    class Meta:
+        model = Pos
+        fields = ('pos_name',)

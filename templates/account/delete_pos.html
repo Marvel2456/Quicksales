@@ -7,7 +7,7 @@
             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <!--Forms begins-->
-            <form {% block Action %} action="{% url 'delete_pos' %}" {% endblock Action %} method="POST" class="card p-3 border-dark mt-3" enctype="multipart/form-data">
+            <form {% block Action %} action="{% url 'deletepos' %}" {% endblock Action %} method="POST" class="card p-3 border-dark mt-3" enctype="multipart/form-data">
             {% csrf_token %}
     
                 <div class="modal-body">
@@ -19,7 +19,7 @@
                     {% endblock Value-id %}
 
                     <div class="card card-body form-group align-items-center">
-                        <h5>Want to delete {{pos.name}} ?</h5>
+                        <h5>Want to delete {{pos.pos_name}} ?</h5>
                         <p>
                             <a href="">
                             <button type="submit" class="btn btn-success">Yes</button>

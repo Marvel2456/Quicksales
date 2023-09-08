@@ -737,7 +737,7 @@ def createTicket(request):
 
 
 def export_profit(request):
-    sale = Sale.objects.all()
+    
     # create buffer
     buf = io.BytesIO()
     #  create canvas
@@ -745,26 +745,28 @@ def export_profit(request):
     #  create a text object
     textobj = c.beginText()
     textobj.setTextOrigin(inch, inch)
-    textobj.setFont("Helvetica", 14)
+    textobj.setFont("Helvetica", 10)
     # Add lines of text
-    total_profits = sum(sale.values_list('total_profit', flat=True))
+    
 
+    sale = Sale.objects.all()
+    total_profits = sum(sale.values_list('total_profit', flat=True))
     lines = []
 
     for sale in sale:
-        lines.append(sale.staff)
-        # lines.append(sale.transaction_id)
+        lines.append(str(sale.staff))
+        lines.append(sale.transaction_id)
         lines.append(sale.method)
-        # lines.append(sale.date_updated)
-        lines.append(sale.get_cart_items)
-        lines.append(sale.final_total_price)
+        lines.append(str(sale.date_updated))
+        lines.append(str(sale.get_cart_items))
+        lines.append(str(sale.final_total_price))
         lines.append(" ")
 
-    lines.append(total_profits)
+    lines.append(str(total_profits))
 
 
-    for lines in lines:
-        textobj.textLine(lines)
+    for line in lines:
+        textobj.textLine(line)
 
     c.drawText(textobj)
     c.showPage()

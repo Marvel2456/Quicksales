@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import CustomUser, LoggedIn, Pos
+from .models import CustomUser, LoggedIn, Pos, Plan
 from ims.forms import UserCreateForm
 from django.contrib.auth.admin import UserAdmin
 
@@ -31,3 +31,4 @@ class CustomStaffAdmin(UserAdmin):
 admin.site.register(CustomUser, CustomStaffAdmin)
 admin.site.register(LoggedIn)
 admin.site.register(Pos)
+admin.site.register(Plan)

@@ -20,7 +20,7 @@
                     {% block Value-quantity_restocked %}
                     <div class="mb-3">
                         <label for="quantity_restocked" class="form-label">Quantity</label>
-                        <input type="text" id="id_quantity_restocked" class="form-control" name="quantity_restocked"  value="{{inventory.quantity_restocked}}">
+                        <input type="text" class="form-control" id="quantity_restocked" name="quantity_restocked"  value="{{inventory.quantity_restocked}}">
                     </div>
                     {% endblock Value-quantity_restocked %}
 
@@ -50,10 +50,10 @@
     </div>
 </div>
 <script>
-    const formInInput = document.querySelector('#id_quantity_restocked');
+    const formInInput = document.querySelector('#quantity_restocked');
         
     console.log(formInInput.value);
 
-    formInInput.value = '0';
+    formInInput.value = '';
 
 </script>

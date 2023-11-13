@@ -3,46 +3,30 @@ from django.http import HttpResponseRedirect
 from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout
 from datetime import datetime, date
-from .models import Category, Product, Sale, SalesItem, Inventory, Staff, LoggedIn, ErrorTicket, Supplier
+from .models import Category, Product, Sale, SalesItem, Inventory, ErrorTicket
+from account.models import CustomUser, LoggedIn, Pos
 from django.contrib.auth.decorators import login_required
-from .decorators import unauthenticated_user, allowed_users, admin_only
 from . forms import *
 from django.core.paginator import Paginator
 from django.http import JsonResponse, HttpResponse
 import csv
 import json
+from account.decorators import for_admin, for_staff, for_sub_admin, is_unsubscribed
+from django.http import FileResponse
+import io
+from reportlab.pdfgen import canvas
+from reportlab.lib.units import inch
+from reportlab.lib.pagesizes import letter
+# from django.template.loader import render_to_string
+# from weasyprint import HTML
+# import tempfile
+# from django.db.models import Sum
+
+
 
 # Create your views here
-
-@unauthenticated_user
-def loginUser(request):
-    if request.method =='POST':
-        username = request.POST.get('username')
-        password = request.POST.get('password')
-        user = authenticate(request, username=username, password=password)
-        if user is not None:
-            login(request, user)
-            LoggedIn.objects.create(staff=user,
-            login_id = datetime.now().timestamp(),
-            timestamp = datetime.now()
-            ).save()
-            messages.success(request, f'Welcome {user.username}')
-            return redirect('index')
-        else:
-            messages.info(request, 'Username or Password is not correct')
-
-    return render(request, 'ims/login.html')
-
-
-        
-def logoutUser(request):
-    logout(request)
-    return redirect('login')
-
-
-
 @login_required(login_url=('login'))
-@admin_only
+@is_unsubscribed
 def dashboard(request):
     now = datetime.now()
     current_year = now.strftime("%Y")
@@ -64,6 +48,7 @@ def dashboard(request):
         date_added__day = current_day
     ).all()
     total_sales = sum(today_sales.values_list('final_total_price',flat=True))
+    # make graph for highest paid products per day
     today_profit = Sale.objects.filter(
         date_added__year=current_year,
         date_added__month = current_month,
@@ -75,8 +60,6 @@ def dashboard(request):
 
     sale = Sale.objects.order_by('-total_profit')[:7]
     item = SalesItem.objects.order_by('-quantity')[:7]
-
-
 
 
     context = {
@@ -94,12 +77,37 @@ def dashboard(request):
     }
     return render(request, 'ims/index.html', context)
 
+@login_required
+@is_unsubscribed
+@for_admin
+def report(request):
+    now = datetime.now()
+    start_date_contains = request.GET.get('start_date')
+    end_date_contains = request.GET.get('end_date')
+    sale = Sale.objects.all()
 
-# @login_required(login_url=('login'))
-# @allowed_users(allowed_roles=['admin', 'staff'])
+    if start_date_contains != '' and start_date_contains is not None:
+        sale = sale.filter(date_updated__gte=start_date_contains)
+
+    if end_date_contains != '' and end_date_contains is not None:
+        sale = sale.filter(date_updated__lt=end_date_contains)
+    
+    
+    total_profits = sum(sale.values_list('total_profit', flat=True))
+    
+
+    context = {
+        'sale':sale,
+        'total_profits':total_profits,
+    }
+    return render(request, 'ims/reports.html', context)
+
+@login_required
+@is_unsubscribed
+@for_staff
 def store(request):
     inventory = Inventory.objects.all()
-    paginator = Paginator(Inventory.objects.all(), 3)
+    paginator = Paginator(Inventory.objects.all(), 15)
     page = request.GET.get('page')
     inventory_page = paginator.get_page(page)
     nums = "a" *inventory_page.paginator.num_pages
@@ -117,31 +125,35 @@ def store(request):
     return render(request, 'ims/store.html', context)
 
 
-@login_required(login_url=('login'))
-@allowed_users(allowed_roles=['admin', 'staff'])
+@for_staff
+@login_required
+@is_unsubscribed
 def cart(request):
     inventory = Inventory.objects.all()
+    pos = Pos.objects.all()
     
     if request.user.is_authenticated:
-        staff = request.user.staff
+        staff = request.user
         sale , created = Sale.objects.get_or_create(staff=staff, completed=False)
         items = sale.salesitem_set.all()
         
     context = {
         'items':items,
         'sale':sale,
+        'pos':pos,
         'inventory':inventory
     }
     return render(request, 'ims/cart.html', context)
 
 
-@login_required(login_url=('login'))
-@allowed_users(allowed_roles=['admin', 'staff'])
+@for_staff
+@login_required
+@is_unsubscribed
 def checkout(request):
     inventory = Inventory.objects.all()
     
     if request.user.is_authenticated:
-        staff = request.user.staff
+        staff = request.user
         sale , created = Sale.objects.get_or_create(staff=staff, completed=False)
         items = sale.salesitem_set.all()
         form = PaymentForm()
@@ -152,12 +164,11 @@ def checkout(request):
                 sale.save()
                 messages.success(request, 'Payment Method Updated')
         
-        
-        
     context = {
         'items':items,
         'sale':sale,
-        'inventory':inventory
+        'inventory':inventory,
+        # 'pos':pos
     }
     return render(request, 'ims/checkout.html', context)
 
@@ -170,7 +181,7 @@ def updateCart(request):
     print('inventory:', inventoryId)
     print('Action:', action)
 
-    staff = request.user.staff
+    staff = request.user
     inventory = Inventory.objects.get(id=inventoryId)
     sale, created = Sale.objects.get_or_create(staff=staff, completed=False)
     saleItem, created = SalesItem.objects.get_or_create(sale=sale, inventory=inventory)
@@ -183,17 +194,18 @@ def updateCart(request):
         saleItem.delete()
 
     context = {
-        'qty': sale.get_cart_items
+        'qty': sale.get_cart_items,
     }
 
     return JsonResponse(context, safe=False)
+
 
 def updateQuantity(request):
     data = json.loads(request.body)
     input_value = int(data['val'])
     inventory_Id = data['invent_id']
     
-    staff = request.user.staff
+    staff = request.user
     inventory = Inventory.objects.get(id=inventory_Id)
     sale, created = Sale.objects.get_or_create(staff=staff, completed=False)
     saleItem, created = SalesItem.objects.get_or_create(sale=sale, inventory=inventory)
@@ -206,32 +218,38 @@ def updateQuantity(request):
     context = {
         'sub_total':saleItem.get_total,
         'final_total':sale.get_cart_total,
-        'total_quantity':sale.get_cart_items
+        'total_quantity':sale.get_cart_items,
     }
 
     return JsonResponse(context, safe=False)
 
+
 def sale_complete(request):
     transaction_id = datetime.now().timestamp()
     data = json.loads(request.body)
-    staff = request.user.staff
+    staff = request.user
     sale, created = Sale.objects.get_or_create(staff=staff, completed=False)
     sale.transaction_id = transaction_id
     total = float(data['payment']['total_cart'])
     sale.final_total_price = sale.get_cart_total
     sale.total_profit = sale.get_total_profit
 
-    if total == sale.get_cart_total:
-        sale.completed = True   
-    sale.save()   
 
+    if total == sale.get_cart_total:
+        sale.completed = True
+    sale.save()
+
+
+    messages.success(request, 'sale completed')
+
+#   need to add shop in other to manage multiple shops and staffs per shop
     return JsonResponse('Payment completed', safe=False)
 
-
-@login_required(login_url=('login'))
-@allowed_users(allowed_roles=['admin'])
+@login_required
+@is_unsubscribed
+@for_admin    
 def sales(request):
-    sale = Sale.objects.all()
+    sale = Sale.objects.all().order_by('-date_updated')
     paginator = Paginator(Sale.objects.all().order_by('-date_updated'), 10)
     page = request.GET.get('page')
     sale_page = paginator.get_page(page)
@@ -243,7 +261,7 @@ def sales(request):
         sale_page = sale.filter(date_updated__gte=start_date_contains)
 
     if end_date_contains != '' and end_date_contains is not None:
-        sale_page = sale.filter(date_updated__lte=end_date_contains)
+        sale_page = sale.filter(date_updated__lt=end_date_contains)
 
     context = {
         'sale':sale,
@@ -252,9 +270,7 @@ def sales(request):
     }
     return render(request, 'ims/sales.html', context)
 
-
-@login_required(login_url=('login'))
-@allowed_users(allowed_roles=['admin'])
+@for_admin
 def sale(request, pk):
     sale = Sale.objects.get(id=pk)
 
@@ -263,9 +279,7 @@ def sale(request, pk):
     }
     return render(request, 'ims/sales_delete.html', context)
 
-
-@login_required(login_url=('login'))
-@allowed_users(allowed_roles=['admin'])
+@for_admin
 def sale_delete(request):
     if request.method == 'POST':
         sale = Sale.objects.get(id = request.POST.get('id'))
@@ -274,28 +288,24 @@ def sale_delete(request):
             messages.success(request, "Succesfully deleted")
             return redirect('sales')
 
-
-@login_required(login_url=('login'))
-@allowed_users(allowed_roles=['admin'])
+@for_admin
 def export_sales_csv(request):
     response = HttpResponse(content_type = 'text/csv')
     response['Content-Disposition']='attachment; filename = Sales History'+str(datetime.now())+'.csv'
     writer = csv.writer(response)
-    writer.writerow(['Sales Rep', 'Trans Id', 'Date', 'Quantity', 'Total', 'Profit'])
+    writer.writerow(['Sales Rep', 'Trans Id', 'Date', 'Quantity', 'Total'])
     
     sale = Sale.objects.all()
     
     for sale in sale:
-        writer.writerow([sale.staff, sale.transaction_id, sale.date_updated, sale.get_cart_items, sale.final_total_price, sale.get_total_profit])
+        writer.writerow([sale.staff, sale.transaction_id, sale.date_updated, sale.get_cart_items, sale.final_total_price])
     
     return response
     
 
-def report(request):
-    return render(request, 'ims/records.html')
-
-
-
+@for_admin
+@login_required
+@is_unsubscribed
 def reciept(request, pk):
     sale = Sale.objects.get(id = pk)
     salesitem = SalesItem.objects.filter(sale_id=sale).all()
@@ -307,12 +317,26 @@ def reciept(request, pk):
     return render(request, 'ims/reciept.html', context)
 
 
-@login_required(login_url=('login'))
-@allowed_users(allowed_roles=['admin'])
+def profitData(request, pk):
+    profits = []
+
+    sale = Sale.objects.get(id = pk)
+    items = sale.salesitem_set.all()
+
+    for i in items:
+        profits.append({i.get_profit:i.inventory.product.product_name})
+
+    return JsonResponse(profits, safe=False)
+
+
+
+@for_sub_admin
+@login_required
+@is_unsubscribed
 def product_category(request):
     products = Product.objects.all().order_by('-date_created')
     category = Category.objects.filter().all()
-    paginator = Paginator(Product.objects.all(), 3)
+    paginator = Paginator(Product.objects.all(), 15)
     page = request.GET.get('page')
     products_page = paginator.get_page(page)
     nums = "a" *products_page.paginator.num_pages
@@ -337,8 +361,8 @@ def product_category(request):
     }
     return render(request, 'ims/products.html', context)
 
-@login_required(login_url=('login'))
-@allowed_users(allowed_roles=['admin'])
+
+@for_sub_admin
 def product(request, pk):
     products = Product.objects.get(id=pk)
 
@@ -348,8 +372,7 @@ def product(request, pk):
     return render(request, 'ims/modal_edit_product.html', context)
 
 
-@login_required(login_url=('login'))
-@allowed_users(allowed_roles=['admin'])
+@for_sub_admin
 def edit_product(request):
     if request.method == 'POST':
         product = Product.objects.get(id = request.POST.get('id'))
@@ -361,8 +384,7 @@ def edit_product(request):
                 return redirect('products')
 
 
-@login_required(login_url=('login'))
-@allowed_users(allowed_roles=['admin'])
+@for_admin
 def delete_product(request):
     if request.method == 'POST':
         product = Product.objects.get(id = request.POST.get('id'))
@@ -372,11 +394,12 @@ def delete_product(request):
             return redirect('products')
 
 
-@login_required(login_url=('login'))
-@allowed_users(allowed_roles=['admin'])
+@login_required
+@is_unsubscribed
+@for_sub_admin
 def category_list(request):
     category = Category.objects.all()
-    paginator = Paginator(Category.objects.all(), 3)
+    paginator = Paginator(Category.objects.all(), 15)
     page = request.GET.get('page')
     category_page = paginator.get_page(page)
     nums = "a" *category_page.paginator.num_pages
@@ -401,8 +424,9 @@ def category_list(request):
     return render(request, 'ims/category.html', context)
 
 
-@login_required(login_url=('login'))
-@allowed_users(allowed_roles=['admin'])
+@for_sub_admin
+@login_required
+@is_unsubscribed
 def category(request, pk):
     category = Category.objects.get(id=pk)
 
@@ -412,8 +436,7 @@ def category(request, pk):
     return render(request, 'ims/edit_category', context)
 
 
-@login_required(login_url=('login'))
-@allowed_users(allowed_roles=['admin'])
+@for_sub_admin
 def edit_category(request):
     if request.method == 'POST':
         category = Category.objects.get(id = request.POST.get('id'))
@@ -425,9 +448,7 @@ def edit_category(request):
                 return redirect('category_list')
 
 
-
-@login_required(login_url=('login'))
-@allowed_users(allowed_roles=['admin'])
+@for_admin
 def delete_category(request):
     if request.method == 'POST':
         category = Category.objects.get(id = request.POST.get('id'))
@@ -437,13 +458,13 @@ def delete_category(request):
             return redirect('category_list')
 
 
-
-@login_required(login_url=('login'))
-@allowed_users(allowed_roles=['admin'])
+@for_sub_admin
+@login_required
+@is_unsubscribed
 def inventory_list(request):
     inventory = Inventory.objects.all()
     product = Product.objects.filter().all()
-    paginator = Paginator(Inventory.objects.all(), 3)
+    paginator = Paginator(Inventory.objects.all(), 15)
     page = request.GET.get('page')
     inventory_page = paginator.get_page(page)
     nums = "a" *inventory_page.paginator.num_pages
@@ -469,8 +490,8 @@ def inventory_list(request):
     return render(request, 'ims/inventory.html', context)
 
 
-@login_required(login_url=('login'))
-@allowed_users(allowed_roles=['admin'])
+@login_required
+@is_unsubscribed
 def inventory(request, pk):
     inventory = Inventory.objects.get(id=pk)
 
@@ -480,9 +501,8 @@ def inventory(request, pk):
     return render(request, 'ims/edit_inventory.html', context)
 
 
-@login_required(login_url=('login'))
-@allowed_users(allowed_roles=['admin'])
-def set_reoder(request):
+@for_admin
+def edit_inventory(request):
     if request.method == 'POST':
         inventory = Inventory.objects.get(id = request.POST.get('id'))
         if inventory != None:
@@ -492,8 +512,8 @@ def set_reoder(request):
                 messages.success(request, 'successfully updated')
                 return redirect('inventorys')
 
-@login_required(login_url=('login'))
-@allowed_users(allowed_roles=['admin'])
+
+@for_sub_admin
 def restock(request):
     if request.method == 'POST':
         inventory = Inventory.objects.get(id = request.POST.get('id'))
@@ -506,9 +526,57 @@ def restock(request):
                 messages.success(request, 'successfully updated')
                 return redirect('inventorys')
 
+@for_sub_admin
+@login_required
+@is_unsubscribed
+def inventoryView(request):
+    inventory = Inventory.objects.all()
+    product = Product.objects.filter().all()
+    paginator = Paginator(Inventory.objects.all(), 15)
+    page = request.GET.get('page')
+    inventory_page = paginator.get_page(page)
+    nums = "a" *inventory_page.paginator.num_pages
+    product_contains_query = request.GET.get('product')
 
-@login_required(login_url=('login'))
-@allowed_users(allowed_roles=['admin'])
+    if product_contains_query != '' and product_contains_query is not None:
+        inventory_page = inventory.filter(product__product_name__icontains=product_contains_query)
+
+    context = {
+        'inventory':inventory,
+        'product':product,
+        'inventory_page':inventory_page,
+        'nums':nums,
+    }
+    return render(request, 'ims/product_list.html', context)
+
+@for_sub_admin
+@login_required
+@is_unsubscribed
+def countView(request):
+    inventory = Inventory.objects.all()
+    audit = Inventory.history.all()
+
+    context = {
+        'inventory':inventory,
+        'audit':audit
+    }
+    return render(request, 'ims/count.html', context)
+
+
+@for_sub_admin
+def addCount(request):
+    if request.method == 'POST':
+        inventory = Inventory.objects.get(id = request.POST.get('id'))
+        if request.method != None:
+            form = AddCountForm(request.POST, instance=inventory)
+            if form.is_valid():
+                form.save(commit=False)
+                inventory.variance = inventory.count - inventory.store_quantity
+                inventory.save()
+                messages.success(request, 'Count Added Successfully')
+                return redirect('count')
+
+@for_admin
 def delete_inventory(request):
     if request.method == 'POST':
         inventory = Inventory.objects.get(id = request.POST.get('id'))
@@ -517,6 +585,9 @@ def delete_inventory(request):
             messages.success(request, "Succesfully deleted")
             return redirect('inventorys')
 
+@for_admin
+@login_required
+@is_unsubscribed
 def inventoryAudit(request):
     inventory = Inventory.objects.all()
     audit = Inventory.history.all()
@@ -527,6 +598,8 @@ def inventoryAudit(request):
     }
     return render(request, 'ims/price_audit.html', context)
 
+
+@for_admin
 def export_audit_csv(request):
     response = HttpResponse(content_type = 'text/csv')
     response['Content-Disposition']='attachment; filename = Audit History'+str(datetime.now())+'.csv'
@@ -541,66 +614,69 @@ def export_audit_csv(request):
     return response
 
 
-@login_required(login_url=('login'))
-@allowed_users(allowed_roles=['admin'])
-def staffs(request):
-    form = UserForm()
+@login_required
+@is_unsubscribed
+@for_admin
+def staffs(request): 
+    staff = CustomUser.objects.all()
+    staff_contains = request.GET.get('username')
+    form = UserCreateForm()
     if request.method == 'POST':
-        form = UserForm(request.POST)
+        form = UserCreateForm(request.POST)
         if form.is_valid():
-            staff = form.save()
+            user = form.save()
             username = form.cleaned_data.get('username')
             messages.success(request, 'Account successfully created for ' + username)
 
-    staff = Staff.objects.all()
-    staff_contains_query = request.GET.get('name')
-    paginator = Paginator(Staff.objects.all(), 3)
-    page = request.GET.get('page')
-    staff_page = paginator.get_page(page)
-    nums = "a" *staff_page.paginator.num_pages
+    if staff_contains != '' and staff_contains is not None:
+        staff = staff.filter(username__icontains=staff_contains)
+   
+    context = {
+        'staff':staff,
+        'form':form
+    }
+    return render(request, 'ims/staff.html', context)
 
 
-    if staff_contains_query != '' and staff_contains_query is not None:
-        staff_page = staff.filter(name__icontains=staff_contains_query)
+@login_required
+@is_unsubscribed
+@for_admin
+def staff(request, pk):
+    staff = CustomUser.objects.get(id=pk)
 
     context = {
         'staff':staff,
-        'form':form,
-        'staff_page':staff_page,
-        'nums':nums
     }
     return render(request, 'ims/staff.html', context)
 
-def staff(request, pk):
-    staffs = Staff.objects.get(id=pk)
 
-    context = {
-        'staffs':staffs
-    }
-    return render(request, 'ims/staff.html', context)
-
-@login_required(login_url=('login'))
-@allowed_users(allowed_roles=['admin'])
+@login_required
+@is_unsubscribed
+@for_admin
 def edit_staff(request):
     if request.method == 'POST':
-        staff = Staff.objects.get(id = request.POST.get('id'))
+        staff = CustomUser.objects.get(id=request.POST.get('id'))
         if staff != None:
-            form = CreateStaffForm(request.POST, instance=staff)
+            form = UserForm(request.POST, instance=staff)
             if form.is_valid():
                 form.save()
                 messages.success(request, 'successfully updated')
                 return redirect('staff')
 
-@login_required(login_url=('login'))
-@allowed_users(allowed_roles=['admin'])
+
+@for_admin
 def delete_staff(request):
     if request.method == 'POST':
-        staff = Staff.objects.get(id = request.POST.get('id'))
+        staff = CustomUser.objects.get(id = request.POST.get('id')) 
         if staff != None:
             staff.delete()
             messages.success(request, "Succesfully deleted")
             return redirect('staff')
 
+
+@for_admin
+@login_required
+@is_unsubscribed
 def record(request):
     login_trail = LoggedIn.objects.all().order_by('-timestamp')
 
@@ -609,6 +685,8 @@ def record(request):
     }
     return render(request, 'ims/records.html', context)
 
+@login_required
+@is_unsubscribed
 def errorTicket(request):
     ticket = ErrorTicket.objects.all()
     pending = ErrorTicket.objects.filter(status='Pending')
@@ -620,6 +698,8 @@ def errorTicket(request):
 
     return render(request, 'ims/ticket.html', context)
 
+@login_required
+@is_unsubscribed
 def Ticket(request, pk):
     ticket = ErrorTicket.objects.get(id=pk)
     form = UpdateTicketForm(instance=ticket)
@@ -635,14 +715,16 @@ def Ticket(request, pk):
     }
     return render(request, 'ims/view_ticket.html', context)
 
+@login_required
+@is_unsubscribed
 def createTicket(request):
-    staff = Staff.objects.all()
+    staff = CustomUser.objects.all()
     form = CreateTicketForm()
     if request.method == 'POST':
         form = CreateTicketForm(request.POST or None)
         if form.is_valid():
             ticket = form.save(commit=False)
-            ticket.staff = request.user.staff
+            ticket.staff = request.user
             ticket.save()
             messages.success(request, 'Ticket Created Successfully')
             return redirect('index')
@@ -652,3 +734,46 @@ def createTicket(request):
     }
     
     return render(request, 'ims/create_ticket.html', context)
+
+
+def export_profit(request):
+    
+    # create buffer
+    buf = io.BytesIO()
+    #  create canvas
+    c = canvas.Canvas(buf, pagesize=letter, bottomup=0)
+    #  create a text object
+    textobj = c.beginText()
+    textobj.setTextOrigin(inch, inch)
+    textobj.setFont("Helvetica", 10)
+    # Add lines of text
+    
+
+    sale = Sale.objects.all()
+    total_profits = sum(sale.values_list('total_profit', flat=True))
+    lines = []
+
+    for sale in sale:
+        lines.append(str(sale.staff))
+        lines.append(sale.transaction_id)
+        lines.append(sale.method)
+        lines.append(str(sale.date_updated))
+        lines.append(str(sale.get_cart_items))
+        lines.append(str(sale.final_total_price))
+        lines.append(" ")
+
+    lines.append(str(total_profits))
+
+
+    for line in lines:
+        textobj.textLine(line)
+
+    c.drawText(textobj)
+    c.showPage()
+    c.save()
+    buf.seek(0)
+
+    #  return
+    return FileResponse(buf, as_attachment=True, filename='profits.pdf')
+
+    

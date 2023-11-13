@@ -1,13 +1,16 @@
-from django.db.models.signals import post_save
-from django.contrib.auth.models import User, Group
-from django.dispatch import receiver
-from .models import Staff
+# # from ims.models import Sale
+# from django.db.models.signals import post_save
+# from django.dispatch import receiver
+# from .models import Event, Sale
 
-@receiver(post_save, sender=User)
-def staff_profile(sender, instance, created, **kwargs):
-    if created:
-        group = Group.objects.get(name='staff')
-        instance.groups.add(group)
-        Staff.objects.create(user=instance, name=instance.username)
-      
-        
+# @receiver(post_save, sender=Sale)
+# def create_event(sender, instance, created, *args, **kwargs):
+
+#     if created:
+#         Event.objects.create(sale=instance)
+
+# @receiver(post_save, sender=Sale)
+# def save_event(sender, instance, created, *args, **kwargs):
+
+#     if created == False:
+#         instance.event.save()

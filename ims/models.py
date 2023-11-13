@@ -1,30 +1,10 @@
 from datetime import date
 from django.db import models
-from django.contrib.auth.models import User
+from account.models import CustomUser, Pos
 from simple_history.models import HistoricalRecords
 
 
 # Create your models here.
-
-class LoggedIn(models.Model):
-    staff = models.ForeignKey(User, on_delete = models.CASCADE)
-    timestamp = models.DateTimeField(auto_now_add = True)
-    login_id = models.CharField(max_length = 100)
-
-    def __str__(self):
-        return str(self.staff)
-
-class Staff(models.Model):
-    user = models.OneToOneField(User, null=True, on_delete=models.CASCADE)
-    name = models.CharField(max_length=200)
-    address = models.CharField(max_length=200)
-    phone_number = models.CharField(max_length=20)
-    email = models.CharField(max_length=200)
-    date_created = models.DateTimeField(auto_now_add=True)
-    
-    def __str__(self):
-        return str(self.user)
-
 class Category(models.Model):
     category_name = models.CharField(max_length=200, unique=True)
     last_updated = models.DateField(auto_now=True,)
@@ -46,13 +26,12 @@ class Product(models.Model):
     last_updated = models.DateField(auto_now=True,)
     date_created = models.DateTimeField(auto_now_add=True,)
     profit = models.FloatField(blank=True, null=True)
-    # history = HistoricalRecords()
     
     def __str__(self):
         return self.product_name
 
 class Inventory(models.Model):
-    product = models.ForeignKey(Product, on_delete=models.CASCADE)
+    product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='products')
     quantity = models.IntegerField(default=0)
     quantity_available = models.IntegerField(default=0)
     reorder_level = models.IntegerField(default=0, blank=True, null=False)
@@ -68,12 +47,14 @@ class Inventory(models.Model):
     store = models.IntegerField(default=0)
     sold = models.IntegerField(default=0, blank=True, null=True)
     variance = models.IntegerField(default=0)
+    available = models.IntegerField(default=0, blank=True, null=True)
     last_updated = models.DateField(auto_now=True,)
     date_created = models.DateTimeField(auto_now_add=True,)
     history = HistoricalRecords()
-
+    
     class Meta:
         verbose_name_plural = "inventories"
+        
 
     def __str__(self):
         return self.product.product_name
@@ -90,14 +71,8 @@ class Inventory(models.Model):
         sold = sum([item.quantity for item in salesitem])
         return sold
 
-    
 class Sale(models.Model):
-    staff = models.ForeignKey(Staff, on_delete=models.SET_NULL, blank=True, null=True)
-    choices = (
-        ('General', 'General'),
-        ('Promo', 'Promo'),
-    )
-    mode_of_sales = models.CharField(max_length=50, choices=choices,default="General", blank=True, null=True)
+    staff = models.ForeignKey(CustomUser, on_delete=models.SET_NULL, blank=True, null=True)
     total_profit = models.FloatField(default=0, blank=True, null=True)
     final_total_price = models.FloatField(default=0, blank=True, null=True)
     discount =  models.FloatField(default=0, blank=True, null=True)
@@ -110,7 +85,9 @@ class Sale(models.Model):
         ('POS', 'POS'),
     )
     method = models.CharField(max_length=50, choices=choices,default="Cash", blank=True, null=True)
+    shop = models.ForeignKey(Pos, on_delete=models.SET_NULL, blank=True, null=True)
     completed = models.BooleanField(default=False)
+    history = HistoricalRecords()
 
     def __str__(self):
         return str(self.transaction_id)
@@ -135,12 +112,21 @@ class Sale(models.Model):
         # display daily profits on the dashboard and on the sales page
         #time based welcome greeting with javascript
 
+    @property
+    def get_total_cost_price(self):
+        salesitem = self.salesitem_set.all()
+        cost_price = sum([item.get_cost_total for item in salesitem])
+        return cost_price
+
+
 class SalesItem(models.Model):
     inventory = models.ForeignKey(Inventory, on_delete=models.SET_NULL, blank=True, null=True)
     sale = models.ForeignKey(Sale, on_delete=models.SET_NULL, blank=True, null=True)
     total = models.FloatField(default=0)
+    cost_total = models.FloatField(default=0)
     quantity = models.IntegerField(default=0, blank=True, null=True)
     last_updated = models.DateTimeField(auto_now=True, blank=True, null=True)
+    history = HistoricalRecords()
     
     def __str__(self):
         return str(self.inventory)
@@ -169,7 +155,8 @@ class Supplier(models.Model):
         return self.supplier_name
 
 class ErrorTicket(models.Model):
-    staff = models.ForeignKey(Staff, on_delete=models.SET_NULL, blank=True, null=True)
+    staff = models.ForeignKey(CustomUser, on_delete=models.SET_NULL, blank=True, null=True)
+    pos_area = models.CharField(max_length=250, blank=True, null=True)
     title = models.CharField(max_length=150, blank=True, null=True)
     description = models.TextField(blank=True, null=True)
     choices = (
@@ -182,3 +169,4 @@ class ErrorTicket(models.Model):
 
     def __str__(self):
         return str(self.title)
+    

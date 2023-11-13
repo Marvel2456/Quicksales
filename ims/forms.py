@@ -1,8 +1,25 @@
 from django.forms import ModelForm, ValidationError
 from django import forms
 from django.contrib.auth.forms import UserCreationForm
-from django.contrib.auth.models import User
+from account.models import CustomUser
 from . models import *
+
+class UserCreateForm(UserCreationForm):
+    class Meta:
+        model = CustomUser
+        fields = (
+            'username', 'password1', 'password2', 'is_admin', 'is_sub_admin', 'is_work_staff', 'pos'
+            )
+        
+        widgets = {
+            'pos': forms.Select(attrs={'class':'form-control', 'placeholder':'Pos'})
+        }
+
+
+class UserForm(ModelForm):
+    class Meta:
+        model = CustomUser
+        fields = ('first_name', 'last_name', 'phone_number', 'address')
 
 class ProductForm(ModelForm):
     class Meta:
@@ -91,26 +108,10 @@ class ReorderForm(ModelForm):
         model = Inventory
         fields = ('reorder_level',)
 
-
-class UserForm(UserCreationForm):
-    class Meta:
-        model = User
-        fields = ('username', 'password1', 'password2')
-
-class CreateStaffForm(ModelForm):
-    class Meta:
-        model = Staff
-        fields = ('name', 'address', 'phone_number', 'email')
-
-class PaymentForm(ModelForm):
-    class Meta:
-        model = Sale
-        fields = ('method',)
-
 class CreateTicketForm(ModelForm):
     class Meta:
         model = ErrorTicket
-        fields = ('title', 'description')
+        fields = ('title',  'pos_area', 'description')
         exclude = ['staff']
 
 class UpdateTicketForm(ModelForm):
@@ -121,4 +122,15 @@ class UpdateTicketForm(ModelForm):
         widgets = {
             'status': forms.Select(attrs={'class':'form-select', 'placeholder':'status', 'required':True})
         }
+
+class PaymentForm(ModelForm):
+    class Meta:
+        model = Sale
+        fields = ('method',)
+
+class AddCountForm(ModelForm):
+    class Meta:
+        model = Inventory
+        fields = ('count',)
+
 

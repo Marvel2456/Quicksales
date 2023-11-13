@@ -249,7 +249,7 @@ def sale_complete(request):
 @is_unsubscribed
 @for_admin    
 def sales(request):
-    sale = Sale.objects.all().order_by('-date_updated')
+    sale = Sale.objects.filter(completed = True).all().order_by('-date_updated')
     paginator = Paginator(Sale.objects.all().order_by('-date_updated'), 10)
     page = request.GET.get('page')
     sale_page = paginator.get_page(page)
@@ -303,7 +303,8 @@ def export_sales_csv(request):
     return response
     
 
-@for_admin
+
+@for_staff
 @login_required
 @is_unsubscribed
 def reciept(request, pk):
@@ -609,7 +610,8 @@ def export_audit_csv(request):
     audit = Inventory.history.all()
     
     for audit in audit:
-        writer.writerow([audit.history_user, audit.product.product_name, audit.history_date, audit.quantity_restocked, audit.cost_price, audit.sale_price])
+        if audit.quantity_restocked > 0:
+            writer.writerow([audit.history_user, audit.product.product_name, audit.history_date, audit.quantity_restocked, audit.cost_price, audit.sale_price])
     
     return response
 

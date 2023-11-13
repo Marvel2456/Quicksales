@@ -64,7 +64,9 @@
                                 </thead>
                                 
                                 <tbody>
-                                   {% for audit in audit %} 
+                                
+                                   {% for audit in audit %}
+                                   {% if audit.quantity_restocked > 0 %} 
                                     <tr>
                                         <td>{{audit.history_user}}</td>
                                         <td>{{audit.product.product_name}}</td>
@@ -73,7 +75,9 @@
                                         <td>{{audit.cost_price}}</td>
                                         <td>{{audit.sale_price}}</td>
                                     </tr>
+                                    {% endif %}
                                     {% endfor %}
+                                
                                 </tbody>
                             </table>
                         </div><!--//table-responsive-->

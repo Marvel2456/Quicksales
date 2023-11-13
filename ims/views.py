@@ -297,7 +297,9 @@ def export_sales_csv(request):
     
     sale = Sale.objects.all()
     
+    
     for sale in sale:
+       
         writer.writerow([sale.staff, sale.transaction_id, sale.date_updated, sale.get_cart_items, sale.final_total_price])
     
     return response

@@ -65,6 +65,7 @@
                                 
                                 <tbody>
                                     {% for sale in sale_page %}
+                                    {% if sale.completed == True %}
                                     <tr>
                                         <td class="cell">{{sale.staff}}</td>
                                         <td class="cell"><span class="truncate">{{sale.transaction_id}}</span></td>
@@ -80,6 +81,7 @@
                                     </tr>
                                     {% comment %} {% include 'ims/reciept.html' %} {% endcomment %}
                                     {% include 'ims/sales_delete.html' %}
+                                    {% endif %}
                                     {% endfor %}
                                     
                                 </tbody>

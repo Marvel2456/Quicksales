@@ -37,7 +37,7 @@ def dashboard(request):
     
     total_product = products.count()
     total_category = category.count()
-    transaction = len(Sale.objects.filter(
+    transaction = len(Sale.objects.filter( completed=True,
         date_added__year=current_year,
         date_added__month = current_month,
         date_added__day = current_day

@@ -681,6 +681,10 @@ def delete_staff(request):
 @is_unsubscribed
 def record(request):
     login_trail = LoggedIn.objects.all().order_by('-timestamp')
+    staff_contains = request.GET.get('username')
+
+    if staff_contains != '' and staff_contains is not None:
+        login_trail = login_trail.filter(staff__username__icontains=staff_contains)
 
     context = {
         'login_trail':login_trail,

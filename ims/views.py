@@ -234,6 +234,7 @@ def sale_complete(request):
     total = float(data['payment']['total_cart'])
     sale.final_total_price = sale.get_cart_total
     sale.total_profit = sale.get_total_profit
+    sale.shop = staff.pos
 
 
     if total == sale.get_cart_total:
@@ -668,14 +669,7 @@ def edit_staff(request):
             return redirect('staff')
         else:
             messages.error(request, 'Form is not valid. Please check the entered data.')
-    # if request.method == 'POST':
-    #     staff = CustomUser.objects.get(id=request.POST.get('id'))
-    #     if staff != None:
-    #         form = UserForm(request.POST, instance=staff)
-    #         if form.is_valid():
-    #             form.save()
-    #             messages.success(request, 'successfully updated')
-    #             return redirect('staff')
+  
 
 
 
@@ -745,6 +739,7 @@ def createTicket(request):
         if form.is_valid():
             ticket = form.save(commit=False)
             ticket.staff = request.user
+            ticket.pos_area = ticket.staff.pos
             ticket.save()
             messages.success(request, 'Ticket Created Successfully')
             return redirect('index')

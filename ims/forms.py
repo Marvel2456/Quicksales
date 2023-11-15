@@ -111,8 +111,8 @@ class ReorderForm(ModelForm):
 class CreateTicketForm(ModelForm):
     class Meta:
         model = ErrorTicket
-        fields = ('title',  'pos_area', 'description')
-        exclude = ['staff']
+        fields = ('title', 'description')
+        exclude = ['staff', 'pos_area']
 
 class UpdateTicketForm(ModelForm):
     class Meta:

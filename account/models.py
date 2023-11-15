@@ -37,7 +37,11 @@ class CustomUser(AbstractUser):
     address = models.CharField(max_length = 200)
     is_subscribed = models.BooleanField(default=True)
     plan = models.ForeignKey(Plan, on_delete=models.CASCADE, blank=True, null=True)
+    is_active = models.BooleanField(default=True)
     date_created = models.DateTimeField(auto_now_add=True)
+
+    # def get_pos_display(self):
+    #     return self.pos.pos_name if self.pos else ''
 
 class LoggedIn(models.Model):
     staff = models.ForeignKey(CustomUser, on_delete = models.CASCADE)

@@ -45,6 +45,7 @@
                                     <tr>
                                         <th class="cell">Username</th>
                                         <th class="cell">Name</th>
+                                        <th class="cell">Role</th>
                                         <th class="cell">Phone Number</th>
                                         <th class="cell"></th>
                                         <th class="cell"></th>
@@ -56,11 +57,19 @@
                                             <i class="fas fa-plus"></i>
                                             Create Staff
                                         </a>
-                                    </div>    
+                                    </div>   
+                                    
                                     {% for staff in staff %}
                                     <tr>
                                         <td class="cell"><span class="truncate">{{staff.username}}</span></td>
                                         <td class="cell">{{staff.first_name}} {{staff.last_name}}</td>
+                                        {% if staff.is_admin == True %}
+                                        <td class="cell">Admin</td>
+                                        {% elif staff.is_sub_admin == True %}
+                                        <td class="cell">Manager</td>
+                                        {% else %}
+                                        <td class="cell">Sales Rep</td>
+                                        {% endif %}
                                         <td class="cell"><span class="note">{{staff.phone_number}}</span></td>
                                         <td class="cell">
                                             <a class="btn-sm app-btn-secondary" data-bs-toggle="modal" data-bs-target="#editStaffModal{{staff.pk}}"><i class="fa-solid fa-pen-to-square"></i></a>&nbsp;
@@ -70,6 +79,7 @@
                                     {% include 'ims/delete_staff.html' %}
                                     {% include 'ims/edit_staff.html' %}
                                     {% endfor %}
+                                   
                                     
                                 </tbody>
                             </table>

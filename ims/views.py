@@ -17,6 +17,7 @@ import io
 from reportlab.pdfgen import canvas
 from reportlab.lib.units import inch
 from reportlab.lib.pagesizes import letter
+from django.shortcuts import get_object_or_404
 # from django.template.loader import render_to_string
 # from weasyprint import HTML
 # import tempfile
@@ -622,7 +623,7 @@ def export_audit_csv(request):
 @is_unsubscribed
 @for_admin
 def staffs(request): 
-    staff = CustomUser.objects.all()
+    staff = CustomUser.objects.filter(is_active = True).all()
     staff_contains = request.GET.get('username')
     form = UserCreateForm()
     if request.method == 'POST':
@@ -659,21 +660,32 @@ def staff(request, pk):
 @for_admin
 def edit_staff(request):
     if request.method == 'POST':
-        staff = CustomUser.objects.get(id=request.POST.get('id'))
-        if staff != None:
-            form = UserForm(request.POST, instance=staff)
-            if form.is_valid():
-                form.save()
-                messages.success(request, 'successfully updated')
-                return redirect('staff')
+        staff = get_object_or_404(CustomUser, id=request.POST.get('id'))
+        form = UserForm(request.POST, instance=staff)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Successfully updated')
+            return redirect('staff')
+        else:
+            messages.error(request, 'Form is not valid. Please check the entered data.')
+    # if request.method == 'POST':
+    #     staff = CustomUser.objects.get(id=request.POST.get('id'))
+    #     if staff != None:
+    #         form = UserForm(request.POST, instance=staff)
+    #         if form.is_valid():
+    #             form.save()
+    #             messages.success(request, 'successfully updated')
+    #             return redirect('staff')
+
 
 
 @for_admin
 def delete_staff(request):
     if request.method == 'POST':
         staff = CustomUser.objects.get(id = request.POST.get('id')) 
-        if staff != None:
-            staff.delete()
+        if staff != None and staff.is_active == True:
+            staff.is_active = False
+            staff.save()
             messages.success(request, "Succesfully deleted")
             return redirect('staff')
 

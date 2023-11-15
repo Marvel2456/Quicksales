@@ -45,6 +45,14 @@
                     </div>
                     {% endblock Value-address %}
 
+                    {% block Value-pos %}
+                        <div class="mb-3 py-2">
+                            <label for="pos" class="form-label">POS</label>
+                            {{form.pos}}
+                        </div>
+                    {% endblock Value-pos %}
+
+                    
                     {% comment %} {% block Value-is_admin %} 
                     <div class="form-check form-check-inline mb-3">
                         <input name="is_admin" class="form-check-input" type="checkbox" id="inlineCheckbox1" value="{{staff.is_admin}}">

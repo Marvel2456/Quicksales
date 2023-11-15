@@ -19,7 +19,7 @@ class UserCreateForm(UserCreationForm):
 class UserForm(ModelForm):
     class Meta:
         model = CustomUser
-        fields = ('first_name', 'last_name', 'phone_number', 'address')
+        fields = ('first_name', 'last_name', 'phone_number', 'address', 'pos')
 
 class ProductForm(ModelForm):
     class Meta:

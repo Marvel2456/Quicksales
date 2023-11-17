@@ -108,11 +108,20 @@ def report(request):
 @for_staff
 def store(request):
     inventory = Inventory.objects.all()
+    category = Category.objects.all()
+    products = Product.objects.all()
     paginator = Paginator(Inventory.objects.all(), 15)
     page = request.GET.get('page')
     inventory_page = paginator.get_page(page)
     nums = "a" *inventory_page.paginator.num_pages
     product_contains_query = request.GET.get('product')
+
+    category = request.GET.get('category')
+
+    if products is None:
+        inventory = Inventory.objects.all()
+    else:
+        inventory = Inventory.objects.filter(product__category=category)
 
     if product_contains_query != '' and product_contains_query is not None:
         inventory_page = inventory.filter(product__product_name__icontains=product_contains_query)
@@ -169,7 +178,6 @@ def checkout(request):
         'items':items,
         'sale':sale,
         'inventory':inventory,
-        # 'pos':pos
     }
     return render(request, 'ims/checkout.html', context)
 
@@ -244,7 +252,6 @@ def sale_complete(request):
 
     messages.success(request, 'sale completed')
 
-#   need to add shop in other to manage multiple shops and staffs per shop
     return JsonResponse('Payment completed', safe=False)
 
 @login_required
@@ -258,12 +265,17 @@ def sales(request):
     nums = "a" *sale_page.paginator.num_pages
     start_date_contains = request.GET.get('start_date')
     end_date_contains = request.GET.get('end_date')
+    shop_contains_query = request.GET.get('shop')
+
 
     if start_date_contains != '' and start_date_contains is not None:
         sale_page = sale.filter(date_updated__gte=start_date_contains)
 
     if end_date_contains != '' and end_date_contains is not None:
         sale_page = sale.filter(date_updated__lt=end_date_contains)
+
+    if shop_contains_query != '' and shop_contains_query is not None:
+        sale_page = sale.filter(shop__pos_name__icontains=shop_contains_query)
 
     context = {
         'sale':sale,
@@ -530,6 +542,9 @@ def restock(request):
                 inventory.save()
                 messages.success(request, 'successfully updated')
                 return redirect('inventorys')
+        else:
+            form = RestockForm()
+        
 
 @for_sub_admin
 @login_required

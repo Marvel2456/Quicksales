@@ -1,3 +1,4 @@
+{% load static %}
 <div class="modal fade" {% block modal-id %} id="addRestockModal{{inventory.pk}}" {% endblock modal-id %} tabindex="-1" aria-labelledby="addRestockModalLabel" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
@@ -49,11 +50,6 @@
         </div>
     </div>
 </div>
-<script>
-    const formInInput = document.querySelector('#quantity_restocked');
-        
-    console.log(formInInput.value);
 
-    formInInput.value = '';
 
-</script>
+

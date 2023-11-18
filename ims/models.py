@@ -20,7 +20,7 @@ class Product(models.Model):
     product_name = models.CharField(max_length=150, blank=True, null=True, unique=True)
     category = models.ForeignKey(Category, on_delete=models.CASCADE)
     brand = models.CharField(max_length=150, blank=True, null=True)
-    product_code = models.CharField(max_length=100)
+    product_code = models.CharField(max_length=100, blank=True, null=True)
     batch_no = models.CharField(max_length=20, blank=True, null=True)
     unit = models.CharField(max_length=50, blank=True, null=True)
     last_updated = models.DateField(auto_now=True,)

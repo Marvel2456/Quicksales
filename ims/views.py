@@ -18,11 +18,22 @@ from reportlab.pdfgen import canvas
 from reportlab.lib.units import inch
 from reportlab.lib.pagesizes import letter
 from django.shortcuts import get_object_or_404
-# from django.template.loader import render_to_string
+from io import BytesIO
+from django.template.loader import get_template
+from xhtml2pdf import pisa
 # from weasyprint import HTML
 # import tempfile
-# from django.db.models import Sum
 
+
+
+def render_to_pdf(template_src, context_dict={}):
+    template = get_template(template_src)
+    html = template.render(context_dict)
+    result = BytesIO()
+    pdf = pisa.pisaDocument(BytesIO(html.encode("ISO-8859-1")), result)
+    if not pdf.err:
+        return HttpResponse(result.getvalue(), content_type='application/pdf')
+    return None
 
 
 # Create your views here
@@ -192,6 +203,32 @@ def updateCart(request):
 
     staff = request.user
     inventory = Inventory.objects.get(id=inventoryId)
+    sale, created = Sale.objects.get_or_create(staff=staff, completed=False)
+    saleItem, created = SalesItem.objects.get_or_create(sale=sale, inventory=inventory)
+
+    if action == 'add':
+        saleItem.quantity = (saleItem.quantity + 1)
+    saleItem.save()
+
+    if saleItem.quantity <= 0:
+        saleItem.delete()
+
+    context = {
+        'qty': sale.get_cart_items,
+    }
+
+    return JsonResponse(context, safe=False)
+
+
+def scanCart(request):
+    data = json.loads(request.body)
+    productId = data['productId']
+    action = data['action']
+    print('inventory:', productId)
+    print('Action:', action)
+
+    staff = request.user
+    inventory = Inventory.objects.get(product=productId)
     sale, created = Sale.objects.get_or_create(staff=staff, completed=False)
     saleItem, created = SalesItem.objects.get_or_create(sale=sale, inventory=inventory)
 
@@ -529,6 +566,59 @@ def edit_inventory(request):
                 messages.success(request, 'successfully updated')
                 return redirect('inventorys')
 
+@for_sub_admin
+def transfer(request):
+    if request.method == 'POST':
+        form = TransferForm(request.POST)
+        if form.is_valid():
+            source_inventory = form.cleaned_data['source_inventory']
+            destination_inventory = form.cleaned_data['destination_inventory']
+            quantity_transfered = form.cleaned_data['quantity_transfered']
+
+            if quantity_transfered > 0:
+                # Perform the transfer logic
+                source_inventory.quantity -= quantity_transfered
+                destination_inventory.quantity += quantity_transfered
+
+                # Save the changes
+                source_inventory.save()
+                destination_inventory.save()
+
+                return redirect('inventorys')
+    else:
+        form = TransferForm()
+
+    inventory = Inventory.objects.all()
+    return render(request, 'transfer.html', {'form': form, 'inventory': inventory})
+    # if request.method == 'POST':
+    #     product_a_id = int(request.POST.get('product_a'))
+    #     product_b_id = int(request.POST.get('product_b'))
+    #     quantity_transfered = int(request.POST.get('quantity_transfered'))
+
+    #     product_a = get_object_or_404(Inventory, id=product_a_id)
+    #     product_b = get_object_or_404(Inventory, id=product_b_id)
+
+        
+    #     if quantity_transfered is not None and quantity_transfered > 0:
+
+    #         product_a.quantity -= quantity_transfered
+    #         product_b.quantity += quantity_transfered
+    #         product_b.save()  
+    #         product_a.save() 
+        
+        # Inventory.objects.filter(id=product_a_id, quantity__gte=quantity_transfered).update(
+        #     quantity=F('quantity') - quantity_transfered
+        # )
+        # Inventory.objects.filter(id=product_b_id).update(
+        #     quantity=F('quantity') + quantity_transfered
+        # )
+
+            
+    #         return redirect('inventorys')  # Redirect to a success page
+
+    # # Retrieve all products for the dropdown in the form
+    # inventory = Inventory.objects.all()
+    # return render(request, 'transfer.html', {'inventory': inventory})
 
 @for_sub_admin
 def restock(request):
@@ -805,5 +895,37 @@ def export_profit(request):
 
     #  return
     return FileResponse(buf, as_attachment=True, filename='profits.pdf')
+
+
+def inventoryReport(request):
+    report = Inventory.objects.all()
+
+    context = {
+        'report': report
+    }
+    return render(request, 'ims/inv_report.html', context)
+
+def downloadProductDetails(request):
+    inventory = Inventory.objects.all()
+
+    data = {
+        'inventory': inventory
+    }
+
+    pdf = render_to_pdf('ims/inv_report.html', data)
+
+    if pdf:
+        response = HttpResponse(pdf, content_type='application/pdf')
+        filename = "Product_%s.pdf" %(data)
+        content = "inline; filename='%s'" %(filename)
+
+        content = "attachment; filename=%s" %(filename)
+        response["Content-Disposition"] = content
+
+        return response
+    return HttpResponse("No pdf file found")
+
+
+
 
     

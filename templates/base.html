@@ -45,6 +45,7 @@
         {% include 'ims/cost_price.html' %}
         {% include 'ims/restock.html' %}
         {% include 'ims/add_inventory.html' %}
+        {% include 'ims/transfer.html' %}
         {% include 'ims/add_staff.html' %}
         {% include 'ims/add_count.html' %}
         {% include 'account/add_pos.html' %}
@@ -58,7 +59,8 @@
     <script src="{% static 'assets/plugins/bootstrap/js/bootstrap.min.js' %}"></script>
     <script src="{% static 'assets/js/jQuery 3.6.1.min.js' %}"></script>
     
-    
+    <!--HTMX-->
+    <script src="{% static 'assets/js/htmx.min.js' %}"></script>
 
     <!-- Charts JS -->
     <script src="{% static 'assets/plugins/chart.js/chart.min.js' %}"></script> 

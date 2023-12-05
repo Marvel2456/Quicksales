@@ -4,6 +4,7 @@ from . import views
 urlpatterns = [
     path('', views.dashboard, name='index'),
     path('update_cart/', views.updateCart, name='update_cart'),
+    path('scan_cart/', views.scanCart, name='scan_cart'),
     path('update_quantity/', views.updateQuantity, name='update_quantity'),
     path('cart/', views.cart, name='cart'),
     path('completed/', views.sale_complete, name='completed'),
@@ -31,6 +32,7 @@ urlpatterns = [
     path('edit_staff/', views.edit_staff, name='edit_staff'),
     path('delete_staff/', views.delete_staff, name='delete_staff'),
     path('restock/', views.restock, name='restock'),
+    path('transfer/', views.transfer, name='transfer'),
     path('export_sales', views.export_sales_csv, name= 'export_sales'),
     path('export_audit', views.export_audit_csv, name= 'export_audit'),
     path('profitData/<str:pk>/', views.profitData, name='profitData'),
@@ -43,6 +45,8 @@ urlpatterns = [
     path('addcount/', views.addCount, name='addcount'),
     path('productlist/', views.inventoryView, name='productlist'),
     path('export_profit_pdf', views.export_profit, name= 'export_profit_pdf'),
+    path('inv_report/', views.inventoryReport, name='inv_report'),
+    path('report_pdf/', views.downloadProductDetails, name='report_pdf'),
 ]
 # what happens when users logs in to another POS and makes sale note: should not be possible
 # A business that price varies?

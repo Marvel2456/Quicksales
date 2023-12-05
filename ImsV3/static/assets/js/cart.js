@@ -3,17 +3,24 @@ let updateCart = document.getElementsByClassName('add-cart')
 for (let i = 0; i< updateCart.length; i++){
     updateCart[i].addEventListener('click', function(){
         let inventoryId = this.dataset.inventory
+        let productId = this.dataset.product
         let action = this.dataset.action
-        console.log('inventoryId:', inventoryId, 'action:', action)
+        console.log('inventoryId:', inventoryId, 'action:', action, 'productId:', productId)
         console.log('User:', user)
         
         if(user){
-            UpdateUserCart(inventoryId, action)
+            UpdateUserCart(inventoryId, action, productId)
         }
     })
 }
 
-function UpdateUserCart(inventoryId, action){
+// write a function that takes compares the inventory id to the product_number and the use the data-action attribute to add
+// the item to the cart, so whenever the barcode scanner scans the product, the product with that product_number
+// exist in the database, the item is added to the cart.
+
+// let scanCart = document.getElementsByClassName()
+
+function UpdateUserCart(inventoryId, action, productId){
     console.log('Sending data')
 
     let url = '/update_cart/'
@@ -24,7 +31,7 @@ function UpdateUserCart(inventoryId, action){
             'Content-Type':'application/json',
             'X-CSRFToken':csrftoken,
         },
-        body:JSON.stringify({'inventoryId':inventoryId, 'action':action})
+        body:JSON.stringify({'inventoryId':inventoryId, 'action':action, 'productId':productId})
     })
     .then(res => res.json())
     .then((data) =>{
@@ -32,6 +39,42 @@ function UpdateUserCart(inventoryId, action){
         document.getElementById('addCart').innerHTML = `${data.qty}`
     })
 }
+
+let scanCart = document.getElementsByClassName('scan-cart')
+
+for (let i = 0; i< scanCart.length; i++){
+    scanCart[i].addEventListener('click', function(){
+        let productId = this.dataset.product
+        let action = this.dataset.action
+        console.log('productId:', productId, 'action:', action)
+        console.log('User:', user)
+        
+        if(user){
+            UpdateUserCart(productId, action)
+        }
+    })
+}
+
+function ScanUserCart(productId, action){
+    console.log('Sending data')
+
+    let url = '/scan_cart/'
+
+    fetch(url, {
+        method:'POST',
+        headers:{
+            'Content-Type':'application/json',
+            'X-CSRFToken':csrftoken,
+        },
+        body:JSON.stringify({'productId':productId, 'action':action})
+    })
+    .then(res => res.json())
+    .then((data) =>{
+        console.log('data:', data)
+        document.getElementById('addCart').innerHTML = `${data.qty}`
+    })
+}
+
 
 let inputfields = document.getElementsByClassName('Qty')
 for(i = 0; i < inputfields.length; i++){

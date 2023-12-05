@@ -133,4 +133,13 @@ class AddCountForm(ModelForm):
         model = Inventory
         fields = ('count',)
 
+class TransferForm(forms.ModelForm):
+    source_inventory = forms.ModelChoiceField(queryset=Inventory.objects.all(), required=True, label='Source Inventory')
+    destination_inventory = forms.ModelChoiceField(queryset=Inventory.objects.all(), required=True, label='Destination Inventory')
+    quantity_transfered = forms.IntegerField()
+
+    class Meta:
+        model = Inventory
+        fields = ['product', 'quantity_transfered']
+
 

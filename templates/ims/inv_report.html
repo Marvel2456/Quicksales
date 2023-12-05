@@ -1,4 +1,4 @@
-{% load static %}
+{% comment %} {% load static %}
 <!DOCTYPE html>
 <html lang="en">
     <head>
@@ -7,46 +7,293 @@
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <link rel="stylesheet" href="{% static 'assets/css/style.css' %}">
         <link rel="stylesheet" href="{% static 'assets/css/bootstrap.min.css' %}">
-        <title class="hidden-print">Quicksales</title>
+        <link id="theme-style" rel="stylesheet" href="{% static 'assets/css/portal.css' %}">
+        <title class="hidden-print">GERALD DENTALS</title>
     </head>
     <body>
-        <div class="container">
-            <div class="row">
-                <div class="col-12 pt-2">
-                    <div class="text-center">
-                        <img src="" alt="Logo">
-                        <h2><strong>Quicksales</strong></h2><hr><br>
-                        <p>Date: {{sale.date_added|date:"D, d M, Y"}}</p>
-                        <p>Total Sales: {{sale.final_total_price}}</p>
-                    </div><hr><br>
-                    <div>
-                        <table class="table text-center">
-                            <thead>
-                              <tr>
-                                <th scope="col">Product</th>
-                                <th scope="col">Quantity</th>
-                                <th scope="col">Price</th>
-                                <th scope="col">Total</th>
-                              </tr>
-                            </thead>
-                            <tbody>
-                            {% for salesitem in salesitem %}
-                              <tr>
-                                <td>{{salesitem.inventory}}</td>
-                                <td>{{salesitem.quantity}}</td>
-                                <td>{{salesitem.inventory.sale_price}}</td>
-                                <td>{{salesitem.get_total}}</td>
-                                
-                              </tr>
-                              {% endfor %}
-                            </tbody>
-                        </table>
+        <div class="app-content pt-3 p-md-3 p-lg-4">
+            <div class="container-xl">
+                
+                <div class="row g-3 mb-4 align-items-center justify-content-between">
+                    <div class="col-4">
+                        
                     </div>
-                    <a class="btn btn-secondary hidden-print" id="btnPrint" href="{% url 'store' %}">Print</a>
-                </div>
-            </div>
-        </div>
-        
-       
+                    <div class="col-4">
+                        <h1 class="app-page-title mb-0">PRODUCT REPORT</h1>
+                    </div>
+                    <div class="col-4">
+                        
+                    </div>
+                    
+                </div><!--row-->
+               
+                <nav id="orders-table-tab" class="orders-table-tab app-nav-tabs nav shadow-sm flex-column flex-sm-row mb-0">
+                    <a class="flex-sm-fill text-sm-center nav-link active" id="orders-all-tab" data-bs-toggle="tab" href="#orders-all" role="tab" aria-controls="orders-all" aria-selected="true"></a>
+                </nav>
+                
+                <div class="tab-content" id="orders-table-tab-content">
+                    <div class="tab-pane fade show active" id="orders-all" role="tabpanel" aria-labelledby="orders-all-tab">
+                        <div class="app-card app-card-orders-table shadow-sm mb-5">
+                            <div class="app-card-body">
+                                <div class="table-responsive">
+                                    <table class="table app-table-hover mb-0 text-left" id="example">
+                                        <thead>
+                                            <tr>
+                                                <th class="cell">Product</th>
+                                                <th class="cell">Category</th>
+                                                <th class="cell">Brand</th>
+                                                <th class="cell">Status</th>
+                                                
+                                                <th class="cell"></th>
+                                                <th class="cell"></th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                             
+                                            {% for report in report %}
+                                            <tr>
+                                                <td class="cell"><span class="truncate">{{report.product.product_name}}</span></td>
+                                                <td class="cell">{{report.product.category}}</td>
+                                                <td class="cell">{{report.product.brand}}</td>
+                                                {% if report.store_quantity > 0 %}
+                                                <td class="cell">Available</span></td>
+                                                {% else %}
+                                                <td class="cell">Not Available</span></td>
+                                                {% endif %}
+                                                
+                                                    
+                                            </tr>
+                                            
+                                            {% endfor %}
+                                            
+                                        </tbody>
+                                    </table>
+                                    <div class="m-2 py-2">
+                                        <a class="btn app-btn-secondary " href="{% url 'report_pdf' %}" >
+                                            <i class="fas fa-plus"></i>
+                                            Download
+                                        </a>
+                                    </div> 
+                                </div><!--table-responsive-->
+                               
+                            </div><!--app-card-body-->		
+                        </div><!--app-card-->
+                        
+                    </div><!--tab-pane-->
+                    
+                </div><!--//tab-content-->
+                
+            </div><!--//container-fluid-->
+        </div><!--//app-content-->
+           
     </body>
+    <script src="{% static 'assets/js/app.js' %}"></script>
+</html> {% endcomment %}
+
+<!DOCTYPE html>
+<html lang="en">
+{% load static %}
+<head>
+  <title>Invoice WonderShop</title>
+  <link rel="stylesheet" href="{% static 'assets/css/bootstrap.min.css' %}">
+<style>
+  .clearfix:after {
+  content: "";
+  display: table;
+  clear: both;
+}
+
+a {
+  text-decoration: underline;
+}
+
+body {
+  position: relative;
+  margin: 0 auto; 
+  color: #001028;
+  background: #FFFFFF; 
+  font-family: Arial, sans-serif; 
+  font-size: 14px; 
+  font-family: Arial;
+}
+
+header {
+  padding: 10px 0;
+  margin-bottom: 30px;
+}
+
+#logo {
+  text-align: center;
+  margin-bottom: 10px;
+}
+
+#logo img {
+  width: 90px;
+}
+
+h1 {
+  
+  color: #5D6975;
+  font-size: 2.4em;
+  line-height: 1.4em;
+  font-weight: normal;
+  text-align: center;
+  margin: 0 0 20px 0;
+}
+
+#project {
+  float: left;
+}
+
+#project span {
+  color: #5D6975;
+  text-align: right;
+  width: 52px;
+  margin-right: 10px;
+  display: inline-block;
+  font-size: 14px;
+}
+
+#company {
+  float: right;
+  text-align: right;
+}
+
+#project div,
+#company div {
+  white-space: nowrap;        
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  border-spacing: 0;
+  margin-bottom: 20px;
+}
+
+
+
+table th,
+table td {
+  text-align: center;
+}
+
+table th {
+  
+  
+  color: #5D6975;
+  border-bottom: 1px solid #C1CED9;
+  white-space: nowrap;        
+  font-weight: normal;
+}
+
+table .service,
+table .desc {
+  text-align: left;
+}
+
+table td {
+ padding-top:5px;
+ padding-bottom:5px;
+  
+}
+
+table tr {
+  border-bottom: 1px solid #C1CED9;
+}
+
+table td.service,
+table td.desc {
+  vertical-align: top;
+}
+
+table td.unit,
+table td.qty,
+table td.total {
+  font-size: 1.2em;
+}
+
+table td.grand {
+  border-top: 1px solid #5D6975;;
+}
+
+#notices .notice {
+  color: #5D6975;
+  font-size: 1.2em;
+}
+
+footer {
+  color: #5D6975;
+  width: 100%;
+  height: 30px;
+  position: absolute;
+  bottom: 0;
+  border-top: 1px solid #C1CED9;
+  padding: 8px 0;
+  text-align: center;
+}
+
+
+  </style>
+</head>
+
+<body>
+  <header class="clearfix">
+    <div id="logo" style="display:flex; justify-content:center; align-items:center;">
+     
+      <h1 class="brand-name">GERALD DENTALS</h1>
+    </div>
+    <h1>STORE REPORT</h1>
+    {% comment %} <div id="company" class="clearfix">
+      <div>WonderShop</div>
+      <div><a href="mailto:company@example.com">company@example.com</a></div>
+      <div><a href="www.wondershop.in:8000">www.wondershop.in:8000</a></div>
+    </div>
+    <div id="project">
+      <div><span>CLIENT:</span> {{name}}</div>
+      <div><span>EMAIL:</span> <a href="mailto:{{user_email}}">{{user_email}}</a></div>
+      <div><span>DATE:</span> {{date}}</div>
+      <div><span>INVOICE ID:</span> {{order_id}}</div>
+      <div><span>TRANSACTION ID:</span> {{transaction_id}}</div>
+    </div> {% endcomment %}
+    <br>
+    <br>
+  </header>
+    <div class="table-container" style="overflow-x:auto">
+      <table class="table" style="width:100%">
+          <thead>
+            <tr>
+                <th class="cell">Product</th>
+                <th class="cell">Category</th>
+                <th class="cell">Brand</th>
+                <th class="cell">Status</th>
+                
+                <th class="cell"></th>
+                <th class="cell"></th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for report in report %}
+            <tr>
+                <td class="cell"><span class="truncate">{{report.product.product_name}}</span></td>
+                <td class="cell">{{report.product.category}}</td>
+                <td class="cell">{{report.product.brand}}</td>
+                {% if report.store_quantity > 0 %}
+                <td class="cell">Available</span></td>
+                {% else %}
+                <td class="cell">Not Available</span></td>
+                {% endif %}
+                
+                    
+            </tr>
+            
+            {% endfor %}
+              
+          </tbody>
+      </table>
+
+    </div>
+   
+</body>
+
 </html>

@@ -11,6 +11,7 @@ from django.core.paginator import Paginator
 from django.http import JsonResponse, HttpResponse
 import csv
 import json
+# import datetime
 from account.decorators import for_admin, for_staff, for_sub_admin, is_unsubscribed
 from django.http import FileResponse
 import io
@@ -897,29 +898,28 @@ def export_profit(request):
     return FileResponse(buf, as_attachment=True, filename='profits.pdf')
 
 
-def inventoryReport(request):
-    report = Inventory.objects.all()
+# def inventoryReport(request):
+#     report = Inventory.objects.all()
 
-    context = {
-        'report': report
-    }
-    return render(request, 'ims/inv_report.html', context)
+#     context = {
+#         'report': report
+#     }
+#     return render(request, 'ims/inv_report.html', context)
 
 def downloadProductDetails(request):
-    inventory = Inventory.objects.all()
+    report = Inventory.objects.all()
 
     data = {
-        'inventory': inventory
+        'report': report
     }
 
     pdf = render_to_pdf('ims/inv_report.html', data)
 
     if pdf:
         response = HttpResponse(pdf, content_type='application/pdf')
-        filename = "Product_%s.pdf" %(data)
-        content = "inline; filename='%s'" %(filename)
-
-        content = "attachment; filename=%s" %(filename)
+        timestamp = datetime.now().strftime('%Y%m%d%H%M%S')
+        filename = f"Product_{timestamp}.pdf"
+        content = f"attachment; filename={filename}"
         response["Content-Disposition"] = content
 
         return response

@@ -32,6 +32,8 @@ class Product(models.Model):
 
 class Inventory(models.Model):
     product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='products')
+    transfer_from = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='transfer_from', null=True, blank=True)
+    transfer_to = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='transfer_to', null=True, blank=True)
     quantity = models.IntegerField(default=0)
     quantity_available = models.IntegerField(default=0)
     reorder_level = models.IntegerField(default=0, blank=True, null=False)

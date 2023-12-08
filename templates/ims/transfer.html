@@ -1,9 +1,10 @@
+{% load crispy_forms_tags  %}
 <!-- Modal -->
 <div class="modal fade" {% block modal-id %} id="TransferModal" {% endblock modal-id %} tabindex="-1" aria-labelledby="TransferModalLabel" aria-hidden="true">
   <div class="modal-dialog">
       <div class="modal-content">
           <div class="modal-header">
-              <h6 class="modal-title" id="TransferModalLabel">{% block modal-title %}<i class="fas fa-plus"></i>&nbsp;&nbsp; Create Inventory{% endblock modal-title %}</h6>
+              <h6 class="modal-title" id="TransferModalLabel">{% block modal-title %}<i class="fas fa-plus"></i>&nbsp;&nbsp; Transfer Inventory{% endblock modal-title %}</h6>
               <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
           </div>
           <!-- Forms begin -->
@@ -15,35 +16,44 @@
                   <!-- Block Id -->
                   {% block Value-id %} {% endblock Value-id %}
 
-                  <div class="mb-3">
-                      <label for="product" class="form-label">Source Product</label>
-                      <select id="id_product" name="source_inventory" class="form-select form-select-sm rounded-0" required {% block Value-product_a %} {% endblock Value-product_a %}>
-                          {% if not inventory.product %}
-                              <option value="" disabled selected>Select Product</option>
-                          {% else %}
-                              <option value="" disabled></option>
-                          {% endif %}
-                          {% for product in inventory %}
-                              <option value="{{ product.id }}">{{ product.product_name }}</option>
-                          {% endfor %}
-                      </select>
-                      <div class="m-3" style="color:red;">{{ form.source_inventory.errors }}</div>
-                  </div>
 
-                  <div class="mb-3">
-                      <label for="product" class="form-label">Destination Product</label>
-                      <select id="id_product" name="destination_inventory" class="form-select form-select-sm rounded-0" required {% block Value-product_b %} {% endblock Value-product_b %}>
-                          {% if not inventory.product %}
-                              <option value="" disabled selected>Select Product</option>
-                          {% else %}
-                              <option value="" disabled></option>
-                          {% endif %}
-                          {% for product in inventory %}
-                              <option value="{{ product.id }}">{{ product.product_name }}</option>
-                          {% endfor %}
-                      </select>
-                      <div class="m-3" style="color:red;">{{ form.destination_inventory.errors }}</div>
-                  </div>
+                    <div class="mb-3">
+                        <label for="product" class="form-label">Product</label>
+                        <select id="id_product" name="transfer_from" class="form-select form-select-sm rounded-0" required {% block Value-transfer_from %} {% endblock Value-transfer_from %}>
+                        {% if not inventory.product %}
+                        <option value="" disabled selected>Select Product</option>
+                        {% else %}
+                        <option value="" disabled></option>
+                        {% endif %}
+                        {% for product in product %}
+                            {% if inventory.product == product.id %}
+                            <option value="{{ product.id }}" selected>{{ product.product_name }}</option>
+                            {% else %}
+                            <option value="{{ product.id }}">{{ product.product_name }}</option>
+                            {% endif %}
+                        {% endfor %}
+                        </select>
+                        <div class="m-3" style="color:red;">{{form.product.errors}}</div>
+                      </div>
+
+                      <div class="mb-3">
+                        <label for="product" class="form-label">Product</label>
+                        <select id="id_product" name="transfer_to" class="form-select form-select-sm rounded-0" required {% block Value-transfer_to %} {% endblock Value-transfer_to %}>
+                        {% if not inventory.product %}
+                        <option value="" disabled selected>Select Product</option>
+                        {% else %}
+                        <option value="" disabled></option>
+                        {% endif %}
+                        {% for product in product %}
+                            {% if inventory.product == product.id %}
+                            <option value="{{ product.id }}" selected>{{ product.product_name }}</option>
+                            {% else %}
+                            <option value="{{ product.id }}">{{ product.product_name }}</option>
+                            {% endif %}
+                        {% endfor %}
+                        </select>
+                        <div class="m-3" style="color:red;">{{form.product.errors}}</div>
+                      </div>
 
 
                   <div class="mb-3">

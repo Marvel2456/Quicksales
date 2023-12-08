@@ -567,14 +567,19 @@ def edit_inventory(request):
                 messages.success(request, 'successfully updated')
                 return redirect('inventorys')
 
+
 @for_sub_admin
 def transfer(request):
     if request.method == 'POST':
         form = TransferForm(request.POST)
         if form.is_valid():
-            source_inventory = form.cleaned_data['source_inventory']
-            destination_inventory = form.cleaned_data['destination_inventory']
+            source_product_id = form.cleaned_data['transfer_from']
+            destination_product_id = form.cleaned_data['transfer_to']
             quantity_transfered = form.cleaned_data['quantity_transfered']
+
+            # Get the source and destination Inventory objects
+            source_inventory = get_object_or_404(Inventory, product_id=source_product_id)
+            destination_inventory = get_object_or_404(Inventory, product_id=destination_product_id)
 
             if quantity_transfered > 0:
                 # Perform the transfer logic
@@ -591,35 +596,7 @@ def transfer(request):
 
     inventory = Inventory.objects.all()
     return render(request, 'transfer.html', {'form': form, 'inventory': inventory})
-    # if request.method == 'POST':
-    #     product_a_id = int(request.POST.get('product_a'))
-    #     product_b_id = int(request.POST.get('product_b'))
-    #     quantity_transfered = int(request.POST.get('quantity_transfered'))
 
-    #     product_a = get_object_or_404(Inventory, id=product_a_id)
-    #     product_b = get_object_or_404(Inventory, id=product_b_id)
-
-        
-    #     if quantity_transfered is not None and quantity_transfered > 0:
-
-    #         product_a.quantity -= quantity_transfered
-    #         product_b.quantity += quantity_transfered
-    #         product_b.save()  
-    #         product_a.save() 
-        
-        # Inventory.objects.filter(id=product_a_id, quantity__gte=quantity_transfered).update(
-        #     quantity=F('quantity') - quantity_transfered
-        # )
-        # Inventory.objects.filter(id=product_b_id).update(
-        #     quantity=F('quantity') + quantity_transfered
-        # )
-
-            
-    #         return redirect('inventorys')  # Redirect to a success page
-
-    # # Retrieve all products for the dropdown in the form
-    # inventory = Inventory.objects.all()
-    # return render(request, 'transfer.html', {'inventory': inventory})
 
 @for_sub_admin
 def restock(request):

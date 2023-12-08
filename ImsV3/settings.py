@@ -44,6 +44,7 @@ INSTALLED_APPS = [
     'account.apps.AccountConfig',
     'pages.apps.PagesConfig',
     'simple_history',
+    'crispy_forms',
 ]
 
 MIDDLEWARE = [

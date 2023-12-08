@@ -4,6 +4,9 @@ from django.contrib.auth.forms import UserCreationForm
 from account.models import CustomUser
 from . models import *
 
+from crispy_forms.helper import FormHelper
+from crispy_forms.layout import Layout, Submit, Row, Column
+
 class UserCreateForm(UserCreationForm):
     class Meta:
         model = CustomUser
@@ -133,13 +136,13 @@ class AddCountForm(ModelForm):
         model = Inventory
         fields = ('count',)
 
-class TransferForm(forms.ModelForm):
-    source_inventory = forms.ModelChoiceField(queryset=Inventory.objects.all(), required=True, label='Source Inventory')
-    destination_inventory = forms.ModelChoiceField(queryset=Inventory.objects.all(), required=True, label='Destination Inventory')
-    quantity_transfered = forms.IntegerField()
+class TransferForm(ModelForm):
+    # source_inventory = forms.ModelChoiceField(queryset=Inventory.objects.all(), required=True, label='Source Inventory')
+    # destination_inventory = forms.ModelChoiceField(queryset=Inventory.objects.all(), required=True, label='Destination Inventory')
+    # quantity_transfered = forms.IntegerField()
 
     class Meta:
         model = Inventory
-        fields = ['product', 'quantity_transfered']
+        fields = ['transfer_from', 'transfer_to', 'quantity_transfered']
 
 

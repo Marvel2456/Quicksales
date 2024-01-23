@@ -50,3 +50,17 @@ class LoggedIn(models.Model):
 
     def __str__(self):
         return str(self.staff)
+
+
+# class Activity(models.Model):
+#     id = models.UUIDField(default=uuid.uuid4, unique=True, primary_key=True, editable=False)
+#     user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, blank=True, null=True)
+#     action = models.CharField(max_length=255, blank=True, null=True)
+#     timestamp = models.DateTimeField(auto_now_add=True)   
+
+#     class Meta:
+#         verbose_name_plural = 'activities'
+#         ordering = ['-timestamp']
+
+#     def __str__(self) -> str:
+#         return f"{self.user.email} - {self.action} - {self.timestamp}"

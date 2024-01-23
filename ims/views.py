@@ -132,8 +132,8 @@ def store(request):
 
     if products is None:
         inventory = Inventory.objects.all()
-    else:
-        inventory = Inventory.objects.filter(product__category=category)
+    # else:
+    #     inventory = Inventory.objects.filter(product__category=category)
 
     if product_contains_query != '' and product_contains_query is not None:
         inventory_page = inventory.filter(product__product_name__icontains=product_contains_query)
